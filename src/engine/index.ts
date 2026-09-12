@@ -1,5 +1,6 @@
 export * from './types';
 export * from './hooks/useDocDelta';
+export * from './spirit';
 
 export { default as DocListLedger } from './components/DocListLedger.vue';
 export { default as DocActionToolbar } from './components/DocActionToolbar.vue';

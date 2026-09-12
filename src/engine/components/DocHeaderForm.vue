@@ -82,6 +82,7 @@
         :readonly="readonly"
         :fields="fields"
         :update-field="updateField"
+        :update-fields="updateField"
       >
         <!-- 默认栅格样式 (Default Layout) -->
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -168,6 +169,20 @@
                   class="w-full p-2 bg-slate-50 border border-slate-300 rounded text-slate-800 text-xs focus:bg-white focus:border-indigo-500 focus:outline-none disabled:opacity-60"
                 ></textarea>
 
+                <!-- 6. 查询精灵输入框 (SpiritInput) -->
+                <SpiritInput
+                  v-else-if="field.type === 'spirit'"
+                  :spirit-key="field.spiritKey || 'SHOP'"
+                  :model-value="masterData[field.key]"
+                  :display-value="getSpiritDisplayValue(field)"
+                  :disabled="readonly || field.disabled"
+                  :placeholder="field.placeholder"
+                  :mapping="field.spiritMapping"
+                  @select="(item, meta) => onSpiritFieldSelect(field, item, meta)"
+                  @confirm="(item, meta) => onSpiritFieldSelect(field, item, meta)"
+                  @clear="onSpiritFieldClear(field)"
+                />
+
                 <!-- 默认兜底 -->
                 <input
                   v-else
@@ -195,6 +210,7 @@ import {
   ChevronDown,
 } from 'lucide-vue-next';
 import { FieldConfig } from '../types';
+import SpiritInput from '../spirit/SpiritInput.vue';
 
 const props = withDefaults(
   defineProps<{
@@ -246,12 +262,114 @@ function getSpanClass(span: number) {
   }
 }
 
-function updateField(field: string, value: any) {
+function getSpiritDisplayValue(field: FieldConfig): string {
+  if (field.displayKey && masterData.value[field.displayKey]) {
+    return String(masterData.value[field.displayKey]);
+  }
+  if (field.spiritMapping) {
+    for (const [targetKey, sourceKey] of Object.entries(field.spiritMapping)) {
+      if ((sourceKey === 'shopName' || sourceKey === 'name' || sourceKey === 'storeName') && masterData.value[targetKey]) {
+        return String(masterData.value[targetKey]);
+      }
+    }
+  }
+  if (field.key === 'shopCode') {
+    return String(masterData.value.shopName || masterData.value.storeName || '');
+  }
+  if (field.key.endsWith('Code')) {
+    const nameKey = field.key.replace(/Code$/, 'Name');
+    if (masterData.value[nameKey]) return String(masterData.value[nameKey]);
+  }
+  return '';
+}
+
+function updateField(field: string | Record<string, any>, value?: any) {
+  if (typeof field === 'object' && field !== null) {
+    const updated = {
+      ...masterData.value,
+      ...field,
+    };
+    emit('update:modelValue', updated);
+    for (const [k, v] of Object.entries(field)) {
+      emit('change', { field: k, value: v });
+    }
+    return;
+  }
   const updated = {
     ...masterData.value,
     [field]: value,
   };
   emit('update:modelValue', updated);
   emit('change', { field, value });
+}
+
+function onSpiritFieldSelect(field: FieldConfig, selectedItem: any, meta?: any) {
+  if (!selectedItem) return;
+  const updated = { ...masterData.value };
+  
+  if (field.spiritMapping) {
+    for (const [targetKey, sourceKey] of Object.entries(field.spiritMapping)) {
+      if (selectedItem[sourceKey] !== undefined) {
+        updated[targetKey] = selectedItem[sourceKey];
+      }
+    }
+  } else {
+    // 默认回填当前字段与对应名称字段
+    const code = selectedItem.shopCode || selectedItem.code || meta?.code || selectedItem.id;
+    const name = selectedItem.shopName || selectedItem.name || meta?.name || selectedItem.title;
+    updated[field.key] = code;
+    if (field.key.endsWith('Code')) {
+      const nameKey = field.key.replace(/Code$/, 'Name');
+      updated[nameKey] = name;
+    }
+  }
+
+  // 针对 SHOP 精灵：确保 shopCode, shopName, storeCode, storeName 同时全部回传更新
+  if (selectedItem.shopCode || selectedItem.code || meta?.shopCode) {
+    const code = selectedItem.shopCode || selectedItem.code || meta?.code || meta?.shopCode;
+    const name = selectedItem.shopName || selectedItem.name || meta?.name || meta?.shopName;
+    updated.shopCode = code;
+    updated.shopName = name;
+    updated.storeCode = code;
+    updated.storeName = name;
+    if (selectedItem.id) {
+      updated.shopId = selectedItem.id;
+    }
+  }
+
+  Object.assign(props.modelValue, updated);
+  emit('update:modelValue', updated);
+
+  for (const [k, v] of Object.entries(updated)) {
+    emit('change', { field: k, value: v });
+  }
+}
+
+function onSpiritFieldClear(field: FieldConfig) {
+  const updated = { ...masterData.value };
+  if (field.spiritMapping) {
+    for (const targetKey of Object.keys(field.spiritMapping)) {
+      updated[targetKey] = '';
+    }
+  } else {
+    updated[field.key] = '';
+    if (field.key.endsWith('Code')) {
+      updated[field.key.replace(/Code$/, 'Name')] = '';
+    }
+  }
+
+  if (field.spiritKey === 'SHOP' || field.key === 'shopCode') {
+    updated.shopCode = '';
+    updated.shopName = '';
+    updated.storeCode = '';
+    updated.storeName = '';
+    updated.shopId = '';
+  }
+
+  Object.assign(props.modelValue, updated);
+  emit('update:modelValue', updated);
+  for (const [k, v] of Object.entries(updated)) {
+    emit('change', { field: k, value: v });
+  }
 }
 </script>

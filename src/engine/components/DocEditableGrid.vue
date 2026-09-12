@@ -316,10 +316,32 @@
             :filter-method="col.filterMethod || defaultColFilterMethod"
           >
             <!-- 单元格展示插槽: 支持业务模块自定义单元格 UI -->
-            <template #default="{ row }">
-              <slot :name="`cell-${col.field}`" :row="row" :col="col" :value="row[col.field]">
+            <template #default="{ row, rowIndex }">
+              <slot :name="`cell-${col.field}`" :row="row" :col="col" :value="row[col.field]" :rowIndex="rowIndex">
+                <!-- 查询精灵字段呈现 (带高亮与可点击放大镜图标) -->
+                <div
+                  v-if="col.type === 'spirit' || col.spiritKey"
+                  class="flex items-center justify-between w-full group/spirit-cell"
+                >
+                  <span
+                    class="truncate font-mono"
+                    :class="row[col.field] ? 'text-slate-900 font-medium' : 'text-slate-400 italic text-[11px]'"
+                    :title="row[col.field] ? String(row[col.field]) : '点击或点击右侧放大镜选择'"
+                  >
+                    {{ row[col.field] || '点击选择商品...' }}
+                  </span>
+                  <button
+                    v-if="!readonly && col.editable !== false"
+                    type="button"
+                    @click.stop="openSpiritForCell(row, col, rowIndex)"
+                    class="w-5 h-5 ml-1 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 rounded transition shrink-0 cursor-pointer shadow-2xs"
+                    :title="`打开${col.title}查询精灵`"
+                  >
+                    <Search class="w-3 h-3" />
+                  </button>
+                </div>
                 <!-- 默认通用格式化呈现 -->
-                <span v-if="col.format === 'currency'" class="font-mono font-medium text-slate-900">
+                <span v-else-if="col.format === 'currency'" class="font-mono font-medium text-slate-900">
                   {{ row[col.field] !== undefined && row[col.field] !== '' && row[col.field] !== null ? `¥${formatCurrency(row[col.field])}` : '-' }}
                 </span>
                 <span v-else-if="col.format === 'percent'" class="font-mono text-slate-700">
@@ -333,10 +355,40 @@
                 </span>
               </slot>
             </template>
+
+            <!-- 就地编辑插槽 (仅针对精灵列) -->
+            <template v-if="col.type === 'spirit' || col.spiritKey" #edit="{ row, rowIndex }">
+              <div class="flex items-center w-full px-1 py-0.5 bg-white">
+                <input
+                  type="text"
+                  v-model="row[col.field]"
+                  @keydown.enter.prevent="openSpiritForCell(row, col, rowIndex)"
+                  class="flex-1 min-w-0 bg-transparent text-xs text-slate-800 focus:outline-none font-mono"
+                  :placeholder="col.placeholder || `回车或点击选${col.title}`"
+                />
+                <button
+                  type="button"
+                  @click.stop="openSpiritForCell(row, col, rowIndex)"
+                  class="w-5 h-5 ml-1 flex items-center justify-center text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded shrink-0 cursor-pointer shadow-2xs"
+                  :title="`打开${col.title}查询精灵 (Enter)`"
+                >
+                  <Search class="w-3 h-3" />
+                </button>
+              </div>
+            </template>
           </vxe-column>
         </template>
       </vxe-table>
     </div>
+
+    <!-- 内置查询精灵通用弹窗 (SpiritModal) -->
+    <SpiritModal
+      v-model:visible="spiritModalVisible"
+      :spirit-config="currentSpiritConfig"
+      :initial-keyword="currentSpiritKeyword"
+      :multiple="currentSpiritColumn?.multiple !== false"
+      @confirm="handleSpiritConfirm"
+    />
 
     <!-- Excel 批量快速粘贴弹窗 (根据 columns 动态解析，通用无硬编码) -->
     <div
@@ -423,6 +475,9 @@ import {
   Filter,
 } from 'lucide-vue-next';
 import { SlaveColumnConfig, DeltaFlag } from '../types';
+import SpiritModal from '../spirit/SpiritModal.vue';
+import { spiritRegistry } from '../spirit/spiritRegistry';
+import { SpiritConfig } from '../spirit/types';
 
 const props = withDefaults(
   defineProps<{
@@ -467,6 +522,7 @@ const emit = defineEmits<{
   (e: 'row-delete', rowIds: string[]): void;
   (e: 'row-duplicate', rowId: string): void;
   (e: 'validate-error', payload: { row: any; field: string; message: string }): void;
+  (e: 'spirit-select', payload: { row: any; column: SlaveColumnConfig; selected: any; allSelected?: any[]; rowIndex?: number }): void;
 }>();
 
 const xTableRef = ref<VxeTableInstance | null>(null);
@@ -788,6 +844,11 @@ const computedEditRules = computed(() => {
 
 // 列编辑渲染模式生成 (原生接入 min/max 限制)
 function getEditRenderConfig(col: SlaveColumnConfig) {
+  if (col.type === 'spirit' || col.spiritKey) {
+    return {
+      name: 'input',
+    };
+  }
   if (col.type === 'select') {
     return {
       name: 'VxeSelect',
@@ -960,6 +1021,173 @@ function onDeleteSelected() {
   emit('update:data', next);
   emit('row-delete', Array.from(delIds));
   selectedRows.value = [];
+}
+
+// ==================== 查询精灵网格集成核心逻辑 ====================
+const spiritModalVisible = ref(false);
+const currentSpiritConfig = ref<SpiritConfig | undefined>();
+const currentSpiritColumn = ref<SlaveColumnConfig | null>(null);
+const currentSpiritRow = ref<any>(null);
+const currentSpiritRowIndex = ref<number>(-1);
+const currentSpiritKeyword = ref<string>('');
+
+/**
+ * 触发指定单元格打开查询精灵
+ */
+function openSpiritForCell(row: any, col: SlaveColumnConfig, rowIndex?: number) {
+  if (props.readonly || col.editable === false) return;
+  const spiritKey = col.spiritKey || (col.type === 'spirit' ? 'PRODUCT' : '');
+  if (!spiritKey) return;
+
+  const cfg = spiritRegistry.get(spiritKey);
+  if (!cfg) {
+    console.warn(`[DocEditableGrid] 查询精灵 ${spiritKey} 未在 spiritRegistry 中注册`);
+    return;
+  }
+
+  currentSpiritConfig.value = cfg;
+  currentSpiritColumn.value = col;
+  currentSpiritRow.value = row;
+  currentSpiritRowIndex.value = rowIndex !== undefined ? rowIndex : tableData.value.indexOf(row);
+  currentSpiritKeyword.value = String(row[col.field] || '');
+  spiritModalVisible.value = true;
+}
+
+/**
+ * 查询精灵确认选定数据后，执行自动回填与自定义逻辑回调处理
+ */
+function handleSpiritConfirm(firstSelected: any, allSelectedRows?: any[]) {
+  if (!currentSpiritColumn.value || !currentSpiritRow.value) return;
+
+  const col = currentSpiritColumn.value;
+  const currentRow = currentSpiritRow.value;
+  const items = allSelectedRows && allSelectedRows.length > 0 ? allSelectedRows : [firstSelected];
+  if (items.length === 0) return;
+
+  // 1. 回填当前单元格所在行 (首个选中项)
+  applySpiritMapping(currentRow, col, items[0]);
+
+  // 记录修改状态
+  if (!insertedIdSet.value.has(currentRow.id)) {
+    updatedIdSet.value.add(currentRow.id);
+  }
+  currentRow.isDirty = true;
+
+  // 执行列配置的自定义逻辑代码回调处理 (onSpiritSelect)
+  if (typeof col.onSpiritSelect === 'function') {
+    col.onSpiritSelect({
+      row: currentRow,
+      selected: items[0],
+      allSelected: items,
+      rowIndex: currentSpiritRowIndex.value,
+      tableData: tableData.value,
+      grid: xTableRef.value,
+    });
+  }
+
+  // 触发 cell-change 告知父级与外部 Hook（如退货单自动重新计算金额）
+  emit('cell-change', {
+    row: currentRow,
+    field: col.field,
+    value: currentRow[col.field],
+    oldValue: null,
+    column: col,
+  });
+
+  // 立即触发 update:data 保证父组件和 Store 实时感知单行选中的更新
+  emit('update:data', [...tableData.value]);
+
+  // 2. 如果多选勾选了多个商品 (items.length > 1) 且开启了多选 (col.multiple !== false)
+  if (items.length > 1 && col.multiple !== false) {
+    const appendedRows: any[] = [];
+    const currentLen = tableData.value.length;
+
+    for (let i = 1; i < items.length; i++) {
+      const item = items[i];
+      const newId = `row-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 6)}`;
+      const newRow: any = {
+        id: newId,
+        rowNo: currentLen + i,
+      };
+
+      // 赋予配置的默认值
+      props.columns.forEach((c) => {
+        if (c.defaultValue !== undefined) {
+          newRow[c.field] = c.defaultValue;
+        }
+      });
+
+      // 映射回填字段
+      applySpiritMapping(newRow, col, item);
+
+      // 执行自定义代码处理
+      if (typeof col.onSpiritSelect === 'function') {
+        col.onSpiritSelect({
+          row: newRow,
+          selected: item,
+          allSelected: items,
+          rowIndex: currentLen + i - 1,
+          tableData: tableData.value,
+          grid: xTableRef.value,
+        });
+      }
+
+      insertedIdSet.value.add(newId);
+      newRow.isDirty = true;
+      appendedRows.push(newRow);
+    }
+
+    if (appendedRows.length > 0) {
+      const nextData = [...tableData.value, ...appendedRows];
+      emit('update:data', nextData);
+
+      appendedRows.forEach((r) => {
+        emit('cell-change', {
+          row: r,
+          field: col.field,
+          value: r[col.field],
+          oldValue: null,
+          column: col,
+        });
+        emit('row-add', r);
+      });
+    }
+  }
+
+  // 触发全局 spirit-select 事件
+  emit('spirit-select', {
+    row: currentRow,
+    column: col,
+    selected: items[0],
+    allSelected: items,
+    rowIndex: currentSpiritRowIndex.value,
+  });
+}
+
+/**
+ * 依据 column 上的 spiritMapping 进行字段填充
+ */
+function applySpiritMapping(row: any, col: SlaveColumnConfig, item: any) {
+  if (col.spiritMapping) {
+    for (const [targetKey, sourceKey] of Object.entries(col.spiritMapping)) {
+      if (item[sourceKey] !== undefined) {
+        row[targetKey] = item[sourceKey];
+      }
+    }
+  } else {
+    // 缺省自动映射：商品编码与名称
+    const valField = currentSpiritConfig.value?.valueField || 'productCode';
+    row[col.field] = item[valField] ?? item.code ?? item.id;
+    if (col.field === 'productCode' && item.productName) {
+      row.productName = item.productName;
+    } else if (col.field === 'itemCode' && item.productName) {
+      row.itemName = item.productName;
+    }
+    if (item.retailPrice !== undefined) {
+      if (row.price !== undefined) row.price = item.retailPrice;
+      if (row.priceWithTax !== undefined) row.priceWithTax = item.retailPrice;
+    }
+  }
 }
 
 // 导出 CSV

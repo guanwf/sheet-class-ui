@@ -787,11 +787,12 @@ const filteredDocuments = computed(() => {
       const matchPartner = doc.partnerName?.toLowerCase().includes(kw);
       const matchBuyer = doc.buyer?.toLowerCase().includes(kw);
       const matchDept = doc.department?.toLowerCase().includes(kw);
-      const matchStore = doc.storeName?.toLowerCase().includes(kw);
+      const matchShop = (doc.shopName || doc.storeName)?.toLowerCase().includes(kw);
+      const matchShopCode = (doc.shopCode || doc.storeCode)?.toLowerCase().includes(kw);
       const matchContract = doc.contractNo?.toLowerCase().includes(kw);
       const matchRemarks = doc.remarks?.toLowerCase().includes(kw);
 
-      if (!matchNo && !matchPartner && !matchBuyer && !matchDept && !matchStore && !matchContract && !matchRemarks) {
+      if (!matchNo && !matchPartner && !matchBuyer && !matchDept && !matchShop && !matchShopCode && !matchContract && !matchRemarks) {
         return false;
       }
     }

@@ -34,7 +34,7 @@ export interface FieldOption {
 export interface FieldConfig {
   key: string;
   label: string;
-  type: 'text' | 'number' | 'date' | 'select' | 'textarea' | 'custom';
+  type: 'text' | 'number' | 'date' | 'select' | 'textarea' | 'spirit' | 'custom';
   span?: number; // 1 ~ 6 栅格跨度，默认 1
   required?: boolean;
   disabled?: boolean;
@@ -43,6 +43,9 @@ export interface FieldConfig {
   min?: number;
   max?: number;
   step?: number;
+  // 查询精灵专属配置
+  spiritKey?: string;
+  spiritMapping?: Record<string, string>;
 }
 
 export interface ColumnRule {
@@ -68,7 +71,7 @@ export interface SlaveColumnConfig {
   fixed?: 'left' | 'right';
   align?: 'left' | 'center' | 'right';
   editable?: boolean;
-  type?: 'text' | 'number' | 'select' | 'date';
+  type?: 'text' | 'number' | 'select' | 'date' | 'spirit';
   options?: Array<FieldOption | string>;
   summary?: 'sum' | 'count' | 'avg' | 'none';
   required?: boolean;
@@ -84,6 +87,19 @@ export interface SlaveColumnConfig {
   filters?: SlaveColumnFilterOption[]; // 自定义静态过滤选项（如仓库、单位下拉选项等）
   filterMultiple?: boolean; // 是否支持多选过滤（默认 true）
   filterMethod?: (params: { value: any; option: any; cellValue: any; row: any; column: any }) => boolean; // 自定义过滤判断方法
+  // 查询精灵专属配置 (Spirit Config for Grid)
+  spiritKey?: string; // 精灵标识，如 'PRODUCT', 'SHOP', 'SUPPLIER'
+  spiritMapping?: Record<string, string>; // 字段自动回填映射规则 { rowField: spiritField }
+  multiple?: boolean; // 是否支持在精灵窗口中多选批量追加行 (默认 true)
+  // 查询精灵返回后自定义逻辑代码回调处理
+  onSpiritSelect?: (payload: {
+    row: any;
+    selected: any;
+    allSelected?: any[];
+    rowIndex?: number;
+    tableData?: any[];
+    grid?: any;
+  }) => void;
 }
 
 export interface SlaveTableConfig {

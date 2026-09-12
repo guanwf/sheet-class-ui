@@ -57,6 +57,7 @@
       @row-add="onRowAdd"
       @row-delete="onRowDelete"
       @row-duplicate="onRowDuplicate"
+      @spirit-select="onSpiritSelect"
     >
       <!-- 2.2.3 单元格自定义渲染插槽演示 (如果业务模块自定义就用自定义的，否则就用默认样式) -->
       <template v-if="enableCustomCellRender" #cell-itemCode="{ row, value }">
@@ -97,7 +98,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, toRaw } from 'vue';
 import { ItemDetailRow } from '../../types/document';
 import { DocEditableGrid, SlaveColumnConfig } from '../../engine';
 import { purchaseOrderModuleConfig } from '../../modules/purchaseOrder/schema';
@@ -120,11 +121,12 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   (e: 'update-row', payload: { rowId: string; fields: Partial<ItemDetailRow>; fieldKey?: keyof ItemDetailRow }): void;
-  (e: 'add-row', insertIndex?: number): void;
+  (e: 'add-row', rowOrIndex?: any): void;
   (e: 'duplicate-row', rowId: string): void;
   (e: 'delete-rows', rowIds: string[]): void;
   (e: 'generate-bulk', count: number): void;
   (e: 'open-batch-add'): void;
+  (e: 'replace-items', items: ItemDetailRow[]): void;
 }>();
 
 const editableGridRef = ref<InstanceType<typeof DocEditableGrid> | null>(null);
@@ -147,18 +149,19 @@ const activeColumns = computed<SlaveColumnConfig[]>(() => {
 
 function onUpdateData(newData: any[]) {
   // 保持与 store 同步
+  emit('replace-items', newData);
 }
 
 function onCellChange({ row, field, value }: { row: any; field: string; value: any }) {
   emit('update-row', {
     rowId: row.id,
-    fields: { [field]: value },
+    fields: { ...toRaw(row), [field]: value },
     fieldKey: field as keyof ItemDetailRow,
   });
 }
 
-function onRowAdd() {
-  emit('add-row');
+function onRowAdd(row?: any) {
+  emit('add-row', row);
 }
 
 function onRowDelete(rowIds: string[]) {
@@ -167,6 +170,16 @@ function onRowDelete(rowIds: string[]) {
 
 function onRowDuplicate(rowId: string) {
   emit('duplicate-row', rowId);
+}
+
+function onSpiritSelect(payload: any) {
+  if (payload && payload.row) {
+    emit('update-row', {
+      rowId: payload.row.id,
+      fields: { ...toRaw(payload.row) },
+    });
+  }
+  emit('replace-items', [...props.items]);
 }
 
 defineExpose({

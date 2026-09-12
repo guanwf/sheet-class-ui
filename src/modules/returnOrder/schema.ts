@@ -1,13 +1,16 @@
 import { DocModuleConfig } from '../../engine/types';
 import { SUPPLIERS } from '../../data/initialTemplates';
+import { MOCK_SHOPS } from '../../data/mockShops';
 
-export const RETURN_STORES = [
-  { code: 'STR-BJ-01', name: '北京中关村智慧旗舰店' },
-  { code: 'STR-SH-02', name: '上海陆家嘴概念体验中心' },
-  { code: 'STR-SZ-03', name: '深圳南山科技园直营店' },
-  { code: 'STR-GZ-04', name: '广州天河核心大厦店' },
-  { code: 'STR-HZ-05', name: '杭州西湖湖滨百货店' },
-];
+export const RETURN_SHOPS = MOCK_SHOPS.map((s) => ({
+  code: s.shopCode,
+  name: s.shopName,
+  city: s.city,
+  manager: s.manager,
+}));
+
+// 向后兼容别名
+export const RETURN_STORES = RETURN_SHOPS;
 
 export const RETURN_REASONS = [
   '质量瑕疵/破损',
@@ -113,23 +116,27 @@ export const returnOrderModuleConfig: DocModuleConfig = {
       required: true,
     },
     {
-      key: 'storeCode',
-      label: '退货门店编号',
-      type: 'select',
+      key: 'shopCode',
+      label: '退货经办门店',
+      type: 'spirit',
+      spiritKey: 'SHOP',
+      spiritMapping: {
+        shopCode: 'shopCode',
+        shopName: 'shopName',
+        storeCode: 'shopCode',
+        storeName: 'shopName',
+      },
       span: 2,
       required: true,
-      options: RETURN_STORES.map((st) => ({
-        label: `[${st.code}] ${st.name}`,
-        value: st.code,
-      })),
+      placeholder: '点击右侧小查询图标选择门店...',
     },
     {
-      key: 'storeName',
-      label: '退货门店名称',
+      key: 'shopName',
+      label: '退货门店全称',
       type: 'text',
       span: 2,
-      required: true,
-      placeholder: '选择门店编号后自动联动带出',
+      disabled: true,
+      placeholder: '选择门店后自动带出',
     },
     {
       key: 'createdBy',
@@ -180,10 +187,39 @@ export const returnOrderModuleConfig: DocModuleConfig = {
         {
           field: 'productCode',
           title: '商品编号',
-          width: 140,
+          width: 155,
           editable: true,
           required: true,
           fixed: 'left',
+          type: 'spirit',
+          spiritKey: 'PRODUCT',
+          multiple: true,
+          placeholder: '点击放大镜或回车选品',
+          spiritMapping: {
+            productCode: 'productCode',
+            productName: 'productName',
+            price: 'retailPrice',
+          },
+          onSpiritSelect: ({ row, selected }) => {
+            // 自定义逻辑代码回调处理：
+            // 1. 若数量为空或<=0，则自动置为默认退货数量 1
+            if (!row.quantity || Number(row.quantity) <= 0) {
+              row.quantity = 1;
+            }
+            // 2. 将建议单价同步带入
+            if (selected.retailPrice !== undefined) {
+              row.price = Number(selected.retailPrice);
+              row.priceWithTax = Number(selected.retailPrice);
+            }
+            // 3. 自动联动计算合计金额 = 数量 * 单价
+            const qty = Number(row.quantity) || 0;
+            const price = Number(row.price) || 0;
+            row.totalAmount = +(qty * price).toFixed(2);
+            // 4. 若退货原因未选，设置默认常见原因
+            if (!row.returnReason) {
+              row.returnReason = '质量瑕疵/破损';
+            }
+          },
         },
         {
           field: 'productName',

@@ -145,6 +145,7 @@
         @delete-rows="$emit('delete-item-rows', $event)"
         @generate-bulk="$emit('generate-bulk', $event)"
         @open-batch-add="$emit('open-batch-add')"
+        @replace-items="$emit('replace-doc-items', $event)"
       />
 
       <!-- 2. 费用分摊 -->
@@ -237,6 +238,7 @@ defineEmits<{
   (e: 'update-costs', costs: CostAllocationRow[]): void;
   (e: 'update-schedule', schedule: PaymentScheduleRow[]): void;
   (e: 'update-attachments', attachments: AttachmentItem[]): void;
+  (e: 'replace-doc-items', items: ItemDetailRow[]): void;
 }>();
 
 const activeSubTab = ref<'items' | 'costs' | 'payment' | 'attachments' | 'logs'>('items');

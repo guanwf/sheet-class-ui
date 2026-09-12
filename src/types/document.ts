@@ -33,7 +33,10 @@ export interface MasterHeader {
   contactPerson: string;
   contactPhone: string;
 
-  // 退货门店字段 (退货单专属)
+  // 退货门店字段 (退货单专属，store 重构规范为 shop)
+  shopCode?: string;
+  shopName?: string;
+  shopId?: string;
   storeCode?: string;
   storeName?: string;
   
@@ -152,7 +155,9 @@ export interface DocumentColumnConfig {
   width: number;
   fixed?: 'left' | 'right';
   editable: boolean;
-  type: 'text' | 'number' | 'select' | 'date';
+  type: 'text' | 'number' | 'select' | 'date' | 'spirit';
+  spiritKey?: string;
+  spiritMapping?: Record<string, string>;
   options?: string[];
   align?: 'left' | 'center' | 'right';
   required?: boolean;

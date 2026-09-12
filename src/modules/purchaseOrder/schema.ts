@@ -191,7 +191,42 @@ export const purchaseOrderModuleConfig: DocModuleConfig = {
       enableFilter: true, // 采购单模块开启网格过滤 (vxe-table 列过滤)
       enableSort: true,   // 采购单模块开启网格排序 (vxe-table 列排序)
       columns: [
-        { field: 'itemCode', title: '物料编码', width: 120, editable: true, required: true, sortable: true, filterable: false },
+        {
+          field: 'itemCode',
+          title: '物料编码',
+          width: 140,
+          editable: true,
+          required: true,
+          sortable: true,
+          filterable: false,
+          type: 'spirit',
+          spiritKey: 'PRODUCT',
+          multiple: true,
+          placeholder: '点击或回车选物料',
+          spiritMapping: {
+            itemCode: 'productCode',
+            itemName: 'productName',
+            spec: 'spec',
+            unit: 'unit',
+            priceWithTax: 'retailPrice',
+          },
+          onSpiritSelect: ({ row, selected }) => {
+            if (!row.quantity || Number(row.quantity) <= 0) {
+              row.quantity = 10;
+            }
+            if (selected.retailPrice !== undefined) {
+              row.priceWithTax = Number(selected.retailPrice);
+              const rate = Number(row.taxRate) || 13;
+              row.priceWithoutTax = +(Number(selected.retailPrice) / (1 + rate / 100)).toFixed(4);
+            }
+            const qty = Number(row.quantity) || 0;
+            const price = Number(row.priceWithTax) || 0;
+            const rate = Number(row.taxRate) || 13;
+            row.amountWithTax = +(qty * price).toFixed(2);
+            row.amountWithoutTax = +(row.amountWithTax / (1 + rate / 100)).toFixed(2);
+            row.taxAmount = +(row.amountWithTax - row.amountWithoutTax).toFixed(2);
+          },
+        },
         { field: 'itemName', title: '物料名称', width: 220, editable: true, required: true, sortable: true, filterable: true },
         { field: 'spec', title: '规格型号', width: 160, editable: true, sortable: true, filterable: true },
         {

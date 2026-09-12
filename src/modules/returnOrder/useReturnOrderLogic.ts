@@ -98,15 +98,27 @@ export function useReturnOrderLogic() {
   }
 
   /**
-   * 3. 主表字段联动：选择门店编号时，自动查找并填充门店名称
+   * 3. 主表字段联动：选择门店编号时，自动查找并填充门店名称与编码
    */
   function handleHeaderFieldChange(field: string, value: any, header: any) {
-    if (field === 'storeCode') {
-      const matched = RETURN_STORES.find((s) => s.code === value);
+    if (field === 'shopCode' || field === 'storeCode') {
+      const trimmed = String(value || '').trim();
+      const matched = RETURN_STORES.find(
+        (s) => s.code === trimmed || (s as any).shopCode === trimmed || (s as any).id === trimmed
+      );
       if (matched) {
+        header.shopCode = matched.code;
+        header.storeCode = matched.code;
+        header.shopName = matched.name;
         header.storeName = matched.name;
-        showToast(`已自动匹配退货门店：${matched.name}`, 'info');
+        showToast(`门店查询精灵已自动匹配并回填：${matched.code} - ${matched.name}`, 'info');
+      } else if (header.shopName || header.storeName) {
+        header.shopName = header.shopName || header.storeName;
+        header.storeName = header.shopName;
       }
+    } else if (field === 'shopName' || field === 'storeName') {
+      header.shopName = value;
+      header.storeName = value;
     }
   }
 
@@ -117,8 +129,9 @@ export function useReturnOrderLogic() {
     if (!header.partnerId) {
       return { valid: false, message: '请选择退货往来供应商' };
     }
-    if (!header.storeCode || !header.storeName) {
-      return { valid: false, message: '请选择退货门店编号及名称' };
+    const hasShop = (header.shopCode || header.storeCode) && (header.shopName || header.storeName);
+    if (!hasShop) {
+      return { valid: false, message: '请通过门店查询精灵选择退货经办门店' };
     }
     if (!items || items.length === 0) {
       return { valid: false, message: '退货单子表至少需包含一行商品记录' };

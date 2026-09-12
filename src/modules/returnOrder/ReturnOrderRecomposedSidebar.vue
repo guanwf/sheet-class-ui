@@ -17,38 +17,32 @@
       </select>
     </div>
 
-    <div class="grid grid-cols-2 gap-2">
-      <div>
-        <label class="block text-slate-500 text-[11px] font-medium mb-1">退货门店编号</label>
-        <input
-          type="text"
-          :value="doc.header.storeCode"
-          :disabled="isReadOnly"
-          placeholder="STR-BJ-01"
-          @input="$emit('update-header', { storeCode: ($event.target as HTMLInputElement).value })"
-          class="w-full h-8 px-2 bg-white border border-slate-300 rounded text-xs font-mono"
-        />
-      </div>
-      <div>
-        <label class="block text-slate-500 text-[11px] font-medium mb-1">制单日期</label>
-        <input
-          type="date"
-          :value="doc.header.docDate"
-          :disabled="isReadOnly"
-          @input="$emit('update-header', { docDate: ($event.target as HTMLInputElement).value })"
-          class="w-full h-8 px-2 bg-white border border-slate-300 rounded text-xs"
-        />
-      </div>
+    <div>
+      <label class="block text-slate-500 text-[11px] font-medium mb-1 flex items-center justify-between">
+        <span>退货经办门店 <span class="text-rose-500">*</span></span>
+        <span class="text-[10px] text-indigo-600 font-mono flex items-center space-x-0.5">
+          <span>✨</span>
+          <span>Shop Spirit</span>
+        </span>
+      </label>
+      <SpiritInput
+        spirit-key="SHOP"
+        :model-value="doc.header.shopCode || doc.header.storeCode"
+        :display-value="doc.header.shopName || doc.header.storeName"
+        :disabled="isReadOnly"
+        placeholder="点击右侧小查询图标选择门店..."
+        @select="(shop) => $emit('update-header', { shopCode: shop.shopCode, shopName: shop.shopName, storeCode: shop.shopCode, storeName: shop.shopName })"
+        @clear="$emit('update-header', { shopCode: '', shopName: '', storeCode: '', storeName: '' })"
+      />
     </div>
 
     <div>
-      <label class="block text-slate-500 text-[11px] font-medium mb-1">退货门店名称</label>
+      <label class="block text-slate-500 text-[11px] font-medium mb-1">制单日期</label>
       <input
-        type="text"
-        :value="doc.header.storeName"
+        type="date"
+        :value="doc.header.docDate"
         :disabled="isReadOnly"
-        placeholder="门店全称..."
-        @input="$emit('update-header', { storeName: ($event.target as HTMLInputElement).value })"
+        @input="$emit('update-header', { docDate: ($event.target as HTMLInputElement).value })"
         class="w-full h-8 px-2 bg-white border border-slate-300 rounded text-xs"
       />
     </div>
@@ -98,6 +92,7 @@
 <script setup lang="ts">
 import { DocumentRecord, MasterHeader } from '../../types/document';
 import { SUPPLIERS } from '../../data/initialTemplates';
+import SpiritInput from '../../engine/spirit/SpiritInput.vue';
 
 defineProps<{
   doc: DocumentRecord;

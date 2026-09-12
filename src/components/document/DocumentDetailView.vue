@@ -282,6 +282,7 @@
         @update-costs="$emit('update-costs', $event)"
         @update-schedule="$emit('update-schedule', $event)"
         @update-attachments="$emit('update-attachments', $event)"
+        @replace-doc-items="$emit('replace-doc-items', $event)"
       />
 
       <!-- 2.2.4 底部状态栏组件 -->

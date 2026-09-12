@@ -1,0 +1,6 @@
+{
+  "name": "Enterprise ERP Document Suite",
+  "description": "高性能企业级主从表单据模块UI，支持多从表切换、虚拟化大数据渲染、公式联动计算、业务流转及高扩展性配置。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

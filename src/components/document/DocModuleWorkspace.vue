@@ -18,6 +18,7 @@
       <DocumentListView
         v-if="activeTab && activeTab.type === 'LIST'"
         :documents="moduleDocs"
+        :list-config="currentModuleDef?.listConfig"
         @open-doc-detail="onOpenDocDetail"
         @new-document="onCreateNewDocTab"
         @batch-approve="onBatchApprove"
@@ -25,6 +26,7 @@
         @duplicate-document="onDuplicateDocument"
         @print-document="onPrintDocument"
       />
+
 
       <!-- 视图 B: 单据详情主从表调整编辑页 (在当前模块内部的 TabPage 中展示) -->
       <DocumentDetailView
@@ -88,6 +90,7 @@ import {
 import TabPageBar from './TabPageBar.vue';
 import DocumentListView from './DocumentListView.vue';
 import DocumentDetailView from './DocumentDetailView.vue';
+import { getBusinessModule } from '../../modules';
 
 const props = defineProps<{
   moduleId: ModuleKey;
@@ -102,7 +105,9 @@ const emit = defineEmits<{
 
 const store = useStore<State>();
 
+const currentModuleDef = computed(() => getBusinessModule(props.moduleId));
 const tabs = computed(() => store.getters.getModuleTabs(props.moduleId));
+
 const activeTabId = computed(() => store.getters.getModuleActiveTabId(props.moduleId));
 const activeDoc = computed(() => store.getters.getModuleActiveDoc(props.moduleId));
 const moduleDocs = computed(() => store.getters.getModuleDocuments(props.moduleId));

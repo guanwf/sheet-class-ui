@@ -191,7 +191,7 @@ export const purchaseOrderModuleConfig: DocModuleConfig = {
       enableFilter: true, // 采购单模块开启网格过滤 (vxe-table 列过滤)
       enableSort: true,   // 采购单模块开启网格排序 (vxe-table 列排序)
       columns: [
-        { field: 'itemCode', title: '物料编码', width: 120, editable: true, required: true, sortable: true, filterable: true },
+        { field: 'itemCode', title: '物料编码', width: 120, editable: true, required: true, sortable: true, filterable: false },
         { field: 'itemName', title: '物料名称', width: 220, editable: true, required: true, sortable: true, filterable: true },
         { field: 'spec', title: '规格型号', width: 160, editable: true, sortable: true, filterable: true },
         {

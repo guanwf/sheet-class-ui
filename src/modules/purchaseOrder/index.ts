@@ -1,11 +1,13 @@
 import { BusinessModuleDefinition } from '../types';
 import { purchaseOrderModuleConfig } from './schema';
+import { purchaseOrderListConfig } from './listConfig';
 import { usePurchaseOrderLogic } from './usePurchaseOrderLogic';
 import PurchaseOrderMasterSlot from './PurchaseOrderMasterSlot.vue';
 import PurchaseOrderRecomposedSidebar from './PurchaseOrderRecomposedSidebar.vue';
 import { buildDocumentDeltaPayload } from '../../engine';
 
 export * from './schema';
+export * from './listConfig';
 export * from './usePurchaseOrderLogic';
 export { default as PurchaseOrderMasterSlot } from './PurchaseOrderMasterSlot.vue';
 export { default as PurchaseOrderRecomposedSidebar } from './PurchaseOrderRecomposedSidebar.vue';
@@ -20,12 +22,14 @@ export const purchaseOrderModule: BusinessModuleDefinition = {
   enableGridFilter: true,
   enableGridSort: true,
   config: purchaseOrderModuleConfig,
+  listConfig: purchaseOrderListConfig,
   slaveColumns: purchaseOrderModuleConfig.slaves.OrderItem.columns,
   useLogic: usePurchaseOrderLogic,
   logic: usePurchaseOrderLogic(),
   MasterSlotComponent: PurchaseOrderMasterSlot,
   RecomposedSidebarComponent: PurchaseOrderRecomposedSidebar,
   buildDeltaPayload: (doc, isDirty) => {
+
     return buildDocumentDeltaPayload(
       doc.header,
       false,

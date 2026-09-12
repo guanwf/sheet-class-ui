@@ -1,126 +1,163 @@
 <template>
   <div class="flex-1 flex flex-col bg-slate-100 p-3 md:p-4 space-y-3 overflow-y-auto">
-    <!-- 1. 状态栏 (KPI卡片区) - 默认提供指标卡，支持业务通过 #status-bar 插槽自定义覆盖 -->
-    <slot name="status-bar" :documents="documents" :stats="computedStats">
-      <!-- 默认状态栏样式 -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 shrink-0">
-        <div class="bg-white p-3.5 rounded-lg border border-slate-200 shadow-2xs flex items-center justify-between">
-          <div>
-            <div class="text-xs text-slate-500 font-medium">单据总台账</div>
-            <div class="text-xl font-bold text-slate-900 font-mono mt-1">
-              {{ documents.length }} <span class="text-xs font-normal text-slate-400">单</span>
-            </div>
-            <div class="text-[11px] text-slate-400 mt-1">其中草稿 {{ computedStats.draftCount }} 单</div>
-          </div>
-          <div class="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
-            <Layers class="w-5 h-5" />
-          </div>
-        </div>
+    <!-- 1. 顶部状态栏 (KPI卡片区) - 支持业务模块自定义 HTML 组件、listConfig 配置驱动或插槽覆盖 -->
+    <slot name="status-bar" :documents="documents" :stats="computedStats" :query="queryValues">
+      <!-- 1.1 若业务模块配置了专属的自定义状态栏组件，优先渲染该组件 (方案一) -->
+      <component
+        v-if="listConfig?.customStatusBarComponent"
+        :is="listConfig.customStatusBarComponent"
+        :documents="documents"
+        :stats="computedStats"
+        :query="queryValues"
+        @filter-status="onQuickFilterStatus"
+      />
 
-        <div class="bg-white p-3.5 rounded-lg border border-slate-200 shadow-2xs flex items-center justify-between">
+      <!-- 1.2 否则渲染默认的 statsCards 标准指标卡网格 -->
+      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 shrink-0">
+        <div
+          v-for="card in activeStatsCards"
+          :key="card.key"
+          @click="onCardClick(card)"
+          :class="[
+            'p-3.5 rounded-lg border shadow-2xs flex items-center justify-between transition select-none',
+            card.filterStatus
+              ? 'cursor-pointer hover:border-indigo-400 hover:shadow-xs'
+              : '',
+            card.filterStatus && queryValues.status === card.filterStatus
+              ? 'ring-2 ring-indigo-500 bg-indigo-50/60 border-indigo-300'
+              : 'bg-white border-slate-200'
+          ]"
+          :title="card.filterStatus ? `点击快速按 [${card.label}] 过滤单据` : undefined"
+        >
           <div>
-            <div class="text-xs text-blue-600 font-medium">待审核审批</div>
-            <div class="text-xl font-bold text-blue-700 font-mono mt-1">
-              {{ computedStats.pendingCount }} <span class="text-xs font-normal text-slate-400">单</span>
+            <div class="flex items-center space-x-1.5">
+              <span
+                :class="[
+                  'text-xs font-medium',
+                  card.color === 'amber' ? 'text-amber-700' :
+                  card.color === 'emerald' ? 'text-emerald-700' :
+                  card.color === 'rose' ? 'text-rose-700' :
+                  card.color === 'purple' ? 'text-purple-700' :
+                  card.color === 'blue' ? 'text-blue-700' : 'text-slate-600'
+                ]"
+              >
+                {{ card.label }}
+              </span>
+              <span
+                v-if="card.filterStatus && queryValues.status === card.filterStatus"
+                class="text-[10px] px-1 py-0.2 rounded bg-indigo-600 text-white font-mono scale-90"
+              >
+                已过滤
+              </span>
             </div>
-            <div class="text-[11px] text-blue-500 mt-1">等待部门主管与财务核准</div>
-          </div>
-          <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-            <Clock class="w-5 h-5" />
-          </div>
-        </div>
 
-        <div class="bg-white p-3.5 rounded-lg border border-slate-200 shadow-2xs flex items-center justify-between">
-          <div>
-            <div class="text-xs text-emerald-600 font-medium">已核准正式生效</div>
-            <div class="text-xl font-bold text-emerald-700 font-mono mt-1">
-              {{ computedStats.approvedCount }} <span class="text-xs font-normal text-slate-400">单</span>
+            <div class="text-xl font-bold font-mono mt-1 text-slate-900">
+              <template v-if="card.isCurrency">
+                ¥{{ formatCurrency(getCardVal(card)) }}
+              </template>
+              <template v-else>
+                {{ getCardVal(card) }}
+                <span class="text-xs font-normal text-slate-400 ml-0.5">{{ card.unit || '单' }}</span>
+              </template>
             </div>
-            <div class="text-[11px] text-emerald-600 mt-1">已下达执行下游仓储与结算</div>
-          </div>
-          <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-            <CheckCircle2 class="w-5 h-5" />
-          </div>
-        </div>
 
-        <div class="bg-white p-3.5 rounded-lg border border-slate-200 shadow-2xs flex items-center justify-between">
-          <div>
-            <div class="text-xs text-slate-500 font-medium">台账金额总计 (¥)</div>
-            <div class="text-xl font-bold text-indigo-900 font-mono mt-1">
-              {{ formatCurrency(computedStats.totalAmountSum) }}
+            <div class="text-[11px] text-slate-400 mt-1 truncate max-w-[180px]">
+              {{ card.subLabel || '统计指标' }}
             </div>
-            <div class="text-[11px] text-slate-400 mt-1">全部单据价税总额</div>
           </div>
-          <div class="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center font-bold font-mono">
-            ¥
+
+          <div
+            :class="[
+              'w-10 h-10 rounded-lg flex items-center justify-center shrink-0',
+              card.color === 'amber' ? 'bg-amber-50 text-amber-600' :
+              card.color === 'emerald' ? 'bg-emerald-50 text-emerald-600' :
+              card.color === 'rose' ? 'bg-rose-50 text-rose-600' :
+              card.color === 'purple' ? 'bg-purple-50 text-purple-600' :
+              card.color === 'blue' ? 'bg-blue-50 text-blue-600' : 'bg-indigo-50 text-indigo-600'
+            ]"
+          >
+            <component :is="getCardIcon(card.icon)" class="w-5 h-5" />
           </div>
         </div>
       </div>
     </slot>
 
-    <!-- 2. 主列表台账容器 (支持分页) -->
+    <!-- 2. 主列表台账容器 (支持分页与列配置化) -->
     <div class="bg-white border border-slate-200 rounded-lg shadow-xs overflow-hidden flex flex-col flex-1 min-h-[460px]">
-      <!-- 查询过滤工具栏 - 默认提供标准过滤，支持 #filter-bar 整块覆盖或 #filter-extra 局部扩展 -->
+      <!-- 查询过滤工具栏 - 由 listConfig.searchFields 驱动，并支持插槽整块覆盖或局部扩展 -->
       <slot
         name="filter-bar"
-        :query="queryState"
+        :query="queryValues"
         :reset="resetFilters"
         :selected-rows="selectedRows"
         :on-new-document="() => $emit('new-document')"
       >
         <div class="p-3.5 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs bg-slate-50/70 shrink-0">
-          <!-- 默认查询条件 -->
+          <!-- 动态驱动的查询条件组件组 -->
           <div class="flex items-center flex-wrap gap-2 flex-1 min-w-[300px]">
-            <div class="relative w-72">
-              <Search class="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-400" />
-              <input
-                v-model="queryState.keyword"
-                type="text"
-                placeholder="搜索单据编号、往来客商、经办人、部门..."
-                class="w-full h-8 pl-8 pr-3 bg-white border border-slate-300 rounded text-xs focus:border-indigo-500 focus:outline-none"
-              />
-            </div>
-
-            <div class="flex items-center space-x-1.5">
-              <span class="text-slate-500">类型:</span>
-              <select
-                v-model="queryState.docType"
-                class="h-8 px-2 bg-white border border-slate-300 rounded text-slate-700 focus:border-indigo-500"
+            <template v-for="field in activeSearchFields" :key="field.field">
+              <!-- 文本搜索框 -->
+              <div
+                v-if="field.type === 'input'"
+                class="relative"
+                :style="{ width: field.width || '260px' }"
               >
-                <option value="ALL">全部单据类型</option>
-                <option value="PURCHASE_ORDER">标准采购订单</option>
-                <option value="RETURN_ORDER">采购退货单</option>
-                <option value="SALES_DELIVERY">销售出库发货单</option>
-                <option value="PROD_REQUISITION">生产领料单</option>
-              </select>
-            </div>
+                <Search class="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-400" />
+                <input
+                  v-model="queryValues[field.field]"
+                  type="text"
+                  :placeholder="field.placeholder || `请输入${field.label}...`"
+                  class="w-full h-8 pl-8 pr-3 bg-white border border-slate-300 rounded text-xs focus:border-indigo-500 focus:outline-none"
+                />
+              </div>
 
-            <div class="flex items-center space-x-1.5">
-              <span class="text-slate-500">状态:</span>
-              <select
-                v-model="queryState.status"
-                class="h-8 px-2 bg-white border border-slate-300 rounded text-slate-700 focus:border-indigo-500"
+              <!-- 下拉选择框 -->
+              <div
+                v-else-if="field.type === 'select'"
+                class="flex items-center space-x-1.5"
               >
-                <option value="ALL">全部单据状态</option>
-                <option value="draft">草稿编制中</option>
-                <option value="pending">待审核审批</option>
-                <option value="approved">已核准生效</option>
-                <option value="rejected">已驳回</option>
-                <option value="voided">已作废</option>
-              </select>
-            </div>
+                <span class="text-slate-500 shrink-0">{{ field.label }}:</span>
+                <select
+                  v-model="queryValues[field.field]"
+                  class="h-8 px-2 bg-white border border-slate-300 rounded text-slate-700 focus:border-indigo-500 text-xs max-w-[200px]"
+                >
+                  <option
+                    v-for="opt in field.options || []"
+                    :key="String(opt.value)"
+                    :value="opt.value"
+                  >
+                    {{ opt.label }}
+                  </option>
+                </select>
+              </div>
 
+              <!-- 日期输入框 -->
+              <div
+                v-else-if="field.type === 'date'"
+                class="flex items-center space-x-1.5"
+              >
+                <span class="text-slate-500 shrink-0">{{ field.label }}:</span>
+                <input
+                  v-model="queryValues[field.field]"
+                  type="date"
+                  class="h-8 px-2 bg-white border border-slate-300 rounded text-slate-700 focus:border-indigo-500 text-xs"
+                />
+              </div>
+            </template>
+
+            <!-- 重置按钮 -->
             <button
-              v-if="queryState.keyword || queryState.status !== 'ALL' || queryState.docType !== 'ALL'"
+              v-if="hasActiveFilter"
               type="button"
               @click="resetFilters"
-              class="px-2.5 py-1 text-slate-500 hover:text-slate-800 hover:bg-slate-200/70 rounded transition"
+              class="px-2.5 py-1 text-slate-500 hover:text-slate-800 hover:bg-slate-200/70 rounded transition inline-flex items-center space-x-1"
             >
-              重置过滤
+              <RotateCcw class="w-3 h-3 text-slate-400" />
+              <span>重置过滤</span>
             </button>
 
             <!-- 业务模块自定义额外过滤项插槽 -->
-            <slot name="filter-extra" :query="queryState" />
+            <slot name="filter-extra" :query="queryValues" />
           </div>
 
           <!-- 右侧动作按钮组 -->
@@ -167,7 +204,7 @@
         </span>
       </div>
 
-      <!-- vxe-table 单据台账列表 -->
+      <!-- vxe-table 单据台账列表 (由 listConfig.columns 动态驱动渲染) -->
       <div class="flex-1 w-full relative min-h-[260px]">
         <vxe-table
           ref="tableRef"
@@ -184,141 +221,177 @@
           @checkbox-all="onCheckboxAll"
           @cell-dblclick="onCellDblClick"
         >
-          <!-- 复选列 -->
-          <vxe-column type="checkbox" width="45" align="center" fixed="left" />
+          <template v-for="col in activeColumns" :key="col.field">
+            <!-- 1. 复选框列 -->
+            <vxe-column
+              v-if="col.type === 'checkbox'"
+              type="checkbox"
+              :width="col.width || 45"
+              :align="col.align || 'center'"
+              :fixed="col.fixed"
+            />
 
-          <!-- 序号列 (连续分页序号) -->
-          <vxe-column width="55" title="序号" align="center" fixed="left">
-            <template #default="{ $rowIndex }">
-              {{ (currentPage - 1) * pageSize + $rowIndex + 1 }}
-            </template>
-          </vxe-column>
+            <!-- 2. 序号列 -->
+            <vxe-column
+              v-else-if="col.type === 'seq'"
+              :width="col.width || 55"
+              :title="col.title || '序号'"
+              :align="col.align || 'center'"
+              :fixed="col.fixed"
+            >
+              <template #default="{ $rowIndex }">
+                {{ (currentPage - 1) * pageSize + $rowIndex + 1 }}
+              </template>
+            </vxe-column>
 
-          <!-- 单据编号 -->
-          <vxe-column field="docNo" title="单据编号" width="180" sortable fixed="left">
-            <template #default="{ row }">
-              <div class="flex items-center space-x-1.5">
-                <button
-                  type="button"
-                  @click.stop="$emit('open-document', row.id)"
-                  class="font-mono font-bold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer"
+            <!-- 3. 单据编号超链接列 -->
+            <vxe-column
+              v-else-if="col.type === 'docNo'"
+              :field="col.field"
+              :title="col.title"
+              :width="col.width || 180"
+              :sortable="col.sortable !== false"
+              :fixed="col.fixed"
+            >
+              <template #default="{ row }">
+                <div class="flex items-center space-x-1.5">
+                  <button
+                    type="button"
+                    @click.stop="$emit('open-document', row.id)"
+                    class="font-mono font-bold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer"
+                  >
+                    {{ row[col.field] }}
+                  </button>
+                </div>
+                <div v-if="row.version !== undefined" class="text-[10px] text-slate-400">版本: v{{ row.version }}</div>
+              </template>
+            </vxe-column>
+
+            <!-- 4. 单据状态彩色徽章列 -->
+            <vxe-column
+              v-else-if="col.type === 'statusBadge'"
+              :field="col.field"
+              :title="col.title"
+              :width="col.width || 110"
+              :align="col.align || 'center'"
+            >
+              <template #default="{ row }">
+                <span
+                  v-if="row.status === 'approved'"
+                  class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-100 text-emerald-800"
                 >
-                  {{ row.docNo }}
-                </button>
-              </div>
-              <div class="text-[10px] text-slate-400">版本: v{{ row.version }}</div>
-            </template>
-          </vxe-column>
-
-          <!-- 单据类型 -->
-          <vxe-column field="docType" title="单据类型" width="130">
-            <template #default="{ row }">
-              <span class="inline-block px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-700">
-                {{ formatDocType(row.docType) }}
-              </span>
-            </template>
-          </vxe-column>
-
-          <!-- 状态 -->
-          <vxe-column field="status" title="状态" width="110" align="center">
-            <template #default="{ row }">
-              <span
-                v-if="row.status === 'approved'"
-                class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-100 text-emerald-800"
-              >
-                已核准生效
-              </span>
-              <span
-                v-else-if="row.status === 'pending'"
-                class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-blue-100 text-blue-800"
-              >
-                待审核
-              </span>
-              <span
-                v-else-if="row.status === 'rejected'"
-                class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-rose-100 text-rose-800"
-              >
-                已驳回
-              </span>
-              <span
-                v-else-if="row.status === 'voided'"
-                class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-600"
-              >
-                已作废
-              </span>
-              <span
-                v-else
-                class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-amber-100 text-amber-800"
-              >
-                草稿
-              </span>
-            </template>
-          </vxe-column>
-
-          <!-- 往来单位/供应商/客户 -->
-          <vxe-column field="partnerName" title="往来单位" min-width="190">
-            <template #default="{ row }">
-              <div class="font-medium text-slate-800 truncate">{{ row.partnerName }}</div>
-              <div class="text-[10px] text-slate-400 font-mono">代码: {{ row.partnerCode }}</div>
-            </template>
-          </vxe-column>
-
-          <!-- 价税合计金额 -->
-          <vxe-column field="totalAmount" title="价税合计(¥)" width="140" align="right" sortable>
-            <template #default="{ row }">
-              <span class="font-mono font-bold text-slate-900">
-                ¥{{ formatCurrency(row.totalAmount) }}
-              </span>
-            </template>
-          </vxe-column>
-
-          <!-- 单据日期 -->
-          <vxe-column field="docDate" title="单据日期" width="110" align="center" sortable />
-
-          <!-- 部门与经办人 -->
-          <vxe-column field="department" title="经办部门/人" width="150">
-            <template #default="{ row }">
-              <div>{{ row.department }}</div>
-              <div class="text-[10px] text-slate-400">{{ row.buyer || row.createdBy }}</div>
-            </template>
-          </vxe-column>
-
-          <!-- 操作列 -->
-          <vxe-column title="操作" width="170" align="center" fixed="right">
-            <template #default="{ row }">
-              <div class="flex items-center justify-center space-x-1">
-                <button
-                  type="button"
-                  @click.stop="$emit('open-document', row.id)"
-                  class="px-2 py-0.5 rounded bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium transition"
-                  title="在新标签页中编辑"
+                  已核准生效
+                </span>
+                <span
+                  v-else-if="row.status === 'pending'"
+                  class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-blue-100 text-blue-800"
                 >
-                  详情编辑
-                </button>
-                <button
-                  type="button"
-                  @click.stop="$emit('duplicate-document', row.id)"
-                  class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 transition"
-                  title="复制新单"
+                  待审核
+                </span>
+                <span
+                  v-else-if="row.status === 'rejected'"
+                  class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-rose-100 text-rose-800"
                 >
-                  复制
-                </button>
-                <button
-                  v-if="row.status !== 'approved'"
-                  type="button"
-                  @click.stop="$emit('delete-document', row.id)"
-                  class="px-2 py-0.5 rounded bg-rose-50 hover:bg-rose-100 text-rose-700 transition"
-                  title="删除单据"
+                  已驳回
+                </span>
+                <span
+                  v-else-if="row.status === 'voided'"
+                  class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-600"
                 >
-                  删除
-                </button>
-              </div>
-            </template>
-          </vxe-column>
+                  已作废
+                </span>
+                <span
+                  v-else
+                  class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-amber-100 text-amber-800"
+                >
+                  草稿
+                </span>
+              </template>
+            </vxe-column>
+
+            <!-- 5. 往来单位/供应商列 (附带代码) -->
+            <vxe-column
+              v-else-if="col.type === 'partner'"
+              :field="col.field"
+              :title="col.title"
+              :min-width="col.minWidth || 190"
+            >
+              <template #default="{ row }">
+                <div class="font-medium text-slate-800 truncate">{{ row.partnerName || row[col.field] }}</div>
+                <div v-if="row.partnerCode" class="text-[10px] text-slate-400 font-mono">代码: {{ row.partnerCode }}</div>
+              </template>
+            </vxe-column>
+
+            <!-- 6. 价税金额列 -->
+            <vxe-column
+              v-else-if="col.type === 'currency' || col.format === 'currency'"
+              :field="col.field"
+              :title="col.title"
+              :width="col.width || 140"
+              :align="col.align || 'right'"
+              :sortable="col.sortable !== false"
+            >
+              <template #default="{ row }">
+                <span class="font-mono font-bold text-slate-900">
+                  ¥{{ formatCurrency(row[col.field]) }}
+                </span>
+              </template>
+            </vxe-column>
+
+            <!-- 7. 操作列 -->
+            <vxe-column
+              v-else-if="col.type === 'actions'"
+              :title="col.title || '操作'"
+              :width="col.width || 170"
+              :align="col.align || 'center'"
+              :fixed="col.fixed || 'right'"
+            >
+              <template #default="{ row }">
+                <div class="flex items-center justify-center space-x-1">
+                  <button
+                    type="button"
+                    @click.stop="$emit('open-document', row.id)"
+                    class="px-2 py-0.5 rounded bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium transition"
+                    title="在新标签页中编辑"
+                  >
+                    详情编辑
+                  </button>
+                  <button
+                    type="button"
+                    @click.stop="$emit('duplicate-document', row.id)"
+                    class="px-1.5 py-0.5 rounded hover:bg-slate-100 text-slate-600 transition"
+                    title="复制单据"
+                  >
+                    复制
+                  </button>
+                  <button
+                    type="button"
+                    @click.stop="$emit('delete-document', row.id)"
+                    class="px-1.5 py-0.5 rounded hover:bg-rose-50 text-rose-600 transition"
+                    title="删除单据"
+                  >
+                    删除
+                  </button>
+                </div>
+              </template>
+            </vxe-column>
+
+            <!-- 8. 普通标准数据列 -->
+            <vxe-column
+              v-else
+              :field="col.field"
+              :title="col.title"
+              :width="col.width"
+              :min-width="col.minWidth"
+              :align="col.align"
+              :sortable="col.sortable"
+              :fixed="col.fixed"
+            />
+          </template>
         </vxe-table>
       </div>
 
-      <!-- 单据列表的分页工具栏 (用户明确要求：单据列表的网格需要支持分页) -->
+      <!-- 单据列表的分页工具栏 -->
       <div class="p-2.5 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs select-none shrink-0">
         <!-- 左侧分页总数统计 -->
         <div class="flex items-center space-x-2 text-slate-500">
@@ -386,7 +459,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, watch } from 'vue';
+import { ref, computed, reactive, watch, toRaw } from 'vue';
 import { VxeTableInstance } from 'vxe-table';
 import {
   Search,
@@ -395,14 +468,27 @@ import {
   CheckCircle2,
   Clock,
   Layers,
+  DollarSign,
+  AlertCircle,
+  RotateCcw,
+  Package,
+  FileText,
 } from 'lucide-vue-next';
+import {
+  DocListConfig,
+  DocListStatsCardConfig,
+  DocListSearchFieldConfig,
+  DocListColumnConfig,
+} from '../types';
 
 const props = withDefaults(
   defineProps<{
     documents: any[];
+    listConfig?: DocListConfig;
   }>(),
   {
     documents: () => [],
+    listConfig: undefined,
   }
 );
 
@@ -417,26 +503,228 @@ const emit = defineEmits<{
 const tableRef = ref<VxeTableInstance | null>(null);
 const selectedRows = ref<any[]>([]);
 
-// 分页状态 (用户明确要求：单据列表必须支持分页)
+// 分页状态
 const currentPage = ref(1);
 const pageSize = ref(10);
 
-// 查询过滤状态
-const queryState = reactive({
+// 查询过滤状态响应式对象
+const queryValues = reactive<Record<string, any>>({
   keyword: '',
-  docType: 'ALL',
   status: 'ALL',
+  docType: 'ALL',
+});
+
+// 初始化/监听查询字段默认值
+function initQueryValues() {
+  if (props.listConfig?.searchFields) {
+    props.listConfig.searchFields.forEach((f) => {
+      if (queryValues[f.field] === undefined) {
+        queryValues[f.field] = f.defaultValue !== undefined ? f.defaultValue : (f.type === 'select' ? 'ALL' : '');
+      }
+    });
+  }
+}
+initQueryValues();
+
+watch(
+  () => props.listConfig,
+  () => {
+    initQueryValues();
+  },
+  { deep: true }
+);
+
+// 默认兜底 KPI 卡片
+const defaultStatsCards: DocListStatsCardConfig[] = [
+  {
+    key: 'total',
+    label: '单据总台账',
+    subLabel: '全部单据记录',
+    icon: 'Layers',
+    color: 'indigo',
+    compute: (docs) => docs.length,
+  },
+  {
+    key: 'pending',
+    label: '待审核审批',
+    subLabel: '等待部门与主管核准',
+    icon: 'Clock',
+    color: 'amber',
+    filterStatus: 'pending',
+    compute: (docs) => docs.filter((d) => (d.header?.status || d.status) === 'pending').length,
+  },
+  {
+    key: 'approved',
+    label: '已核准正式生效',
+    subLabel: '已下达下游执行',
+    icon: 'CheckCircle2',
+    color: 'emerald',
+    filterStatus: 'approved',
+    compute: (docs) => docs.filter((d) => (d.header?.status || d.status) === 'approved').length,
+  },
+  {
+    key: 'totalAmount',
+    label: '台账金额总计 (¥)',
+    subLabel: '全部单据价税总额',
+    icon: 'DollarSign',
+    color: 'indigo',
+    isCurrency: true,
+    compute: (_docs, flatDocs) =>
+      flatDocs.reduce((acc, d) => acc + (Number(d.totalAmount) || 0), 0),
+  },
+];
+
+// 当前启用的 KPI 卡片配置
+const activeStatsCards = computed<DocListStatsCardConfig[]>(() => {
+  return props.listConfig?.statsCards || defaultStatsCards;
+});
+
+// 默认兜底查询字段
+const defaultSearchFields: DocListSearchFieldConfig[] = [
+  {
+    field: 'keyword',
+    label: '搜索',
+    type: 'input',
+    placeholder: '搜索单据编号、往来客商、经办人、部门...',
+    width: '280px',
+  },
+  {
+    field: 'docType',
+    label: '类型',
+    type: 'select',
+    defaultValue: 'ALL',
+    options: [
+      { label: '全部单据类型', value: 'ALL' },
+      { label: '标准采购订单', value: 'PURCHASE_ORDER' },
+      { label: '采购退货单', value: 'RETURN_ORDER' },
+    ],
+  },
+  {
+    field: 'status',
+    label: '状态',
+    type: 'select',
+    defaultValue: 'ALL',
+    options: [
+      { label: '全部单据状态', value: 'ALL' },
+      { label: '草稿编制中', value: 'draft' },
+      { label: '待审核审批', value: 'pending' },
+      { label: '已核准生效', value: 'approved' },
+      { label: '已驳回', value: 'rejected' },
+      { label: '已作废', value: 'voided' },
+    ],
+  },
+];
+
+// 当前启用的查询字段
+const activeSearchFields = computed<DocListSearchFieldConfig[]>(() => {
+  return props.listConfig?.searchFields || defaultSearchFields;
+});
+
+// 默认兜底列配置
+const defaultColumns: DocListColumnConfig[] = [
+  { field: '_checkbox', title: '', type: 'checkbox', width: 45, align: 'center', fixed: 'left' },
+  { field: '_seq', title: '序号', type: 'seq', width: 55, align: 'center', fixed: 'left' },
+  { field: 'docNo', title: '单据编号', type: 'docNo', width: 180, sortable: true, fixed: 'left' },
+  { field: 'docType', title: '单据类型', width: 130 },
+  { field: 'status', title: '状态', type: 'statusBadge', width: 110, align: 'center' },
+  { field: 'partnerName', title: '往来单位', type: 'partner', minWidth: 190 },
+  { field: 'totalAmount', title: '价税合计 (¥)', type: 'currency', width: 140, align: 'right', sortable: true },
+  { field: 'docDate', title: '单据日期', width: 110, align: 'center', sortable: true },
+  { field: 'department', title: '经办部门/人', width: 150 },
+  { field: '_actions', title: '操作', type: 'actions', width: 170, align: 'center', fixed: 'right' },
+];
+
+// 当前启用的列配置
+const activeColumns = computed<DocListColumnConfig[]>(() => {
+  return props.listConfig?.columns || defaultColumns;
+});
+
+// 计算卡片值
+function getCardVal(card: DocListStatsCardConfig): number {
+  if (card.compute) {
+    return card.compute(props.documents, flatDocuments.value);
+  }
+  if (card.filterStatus) {
+    return props.documents.filter(
+      (d) => (d.header?.status || d.status) === card.filterStatus
+    ).length;
+  }
+  return props.documents.length;
+}
+
+// 卡片图标映射
+function getCardIcon(name?: string) {
+  switch (name) {
+    case 'Clock': return Clock;
+    case 'CheckCircle2': return CheckCircle2;
+    case 'DollarSign': return DollarSign;
+    case 'AlertCircle': return AlertCircle;
+    case 'Package': return Package;
+    case 'FileText': return FileText;
+    case 'Layers':
+    default:
+      return Layers;
+  }
+}
+
+// 点击卡片联动快捷筛选状态
+function onCardClick(card: DocListStatsCardConfig) {
+  if (!card.filterStatus) return;
+  if (queryValues.status === card.filterStatus) {
+    queryValues.status = 'ALL';
+  } else {
+    queryValues.status = card.filterStatus;
+  }
+}
+
+// 供自定义状态栏组件调用的快捷状态筛选方法
+function onQuickFilterStatus(status: string) {
+  if (queryValues.status === status) {
+    queryValues.status = 'ALL';
+  } else {
+    queryValues.status = status;
+  }
+}
+
+// 是否有处于激活状态的查询过滤条件
+const hasActiveFilter = computed(() => {
+  for (const [key, val] of Object.entries(queryValues)) {
+    if (val !== undefined && val !== null && val !== '' && val !== 'ALL') {
+      return true;
+    }
+  }
+  return false;
 });
 
 // 重置过滤
 function resetFilters() {
-  queryState.keyword = '';
-  queryState.docType = 'ALL';
-  queryState.status = 'ALL';
+  activeSearchFields.value.forEach((f) => {
+    queryValues[f.field] = f.defaultValue !== undefined ? f.defaultValue : (f.type === 'select' ? 'ALL' : '');
+  });
+  queryValues.keyword = '';
+  queryValues.status = 'ALL';
+  queryValues.docType = 'ALL';
   currentPage.value = 1;
 }
 
-// 统计 KPI
+// 扁平化单据数据供列表展示
+const flatDocuments = computed(() => {
+  return props.documents.map((doc) => {
+    const h = doc.header || doc;
+    const items = doc.items || [];
+    const totalAmount = items.reduce(
+      (acc: number, item: any) => acc + (Number(item.totalAmount) || 0),
+      0
+    );
+    return {
+      ...h,
+      totalAmount,
+      itemsCount: items.length,
+    };
+  });
+});
+
+// 统计 KPI (向后兼容插槽)
 const computedStats = computed(() => {
   let draftCount = 0;
   let pendingCount = 0;
@@ -465,42 +753,49 @@ const computedStats = computed(() => {
   };
 });
 
-// 扁平化数据供列表展示
-const flatDocuments = computed(() => {
-  return props.documents.map((doc) => {
-    const h = doc.header || doc;
-    const items = doc.items || [];
-    const totalAmount = items.reduce(
-      (acc: number, item: any) => acc + (Number(item.totalAmount) || 0),
-      0
-    );
-    return {
-      ...h,
-      totalAmount,
-      itemsCount: items.length,
-    };
-  });
-});
-
-// 筛选后的列表
+// 多条件过滤后的列表
 const filteredDocuments = computed(() => {
-  const kw = queryState.keyword.trim().toLowerCase();
+  const kw = (queryValues.keyword || '').trim().toLowerCase();
+
   return flatDocuments.value.filter((doc) => {
-    if (queryState.status !== 'ALL' && doc.status !== queryState.status) {
+    // 1. 通用状态过滤
+    if (queryValues.status && queryValues.status !== 'ALL' && doc.status !== queryValues.status) {
       return false;
     }
-    if (queryState.docType !== 'ALL' && doc.docType !== queryState.docType) {
+    // 2. 单据类型过滤
+    if (queryValues.docType && queryValues.docType !== 'ALL' && doc.docType !== queryValues.docType) {
       return false;
     }
+
+    // 3. 动态配置字段精确/下拉过滤
+    for (const field of activeSearchFields.value) {
+      const fieldKey = field.field;
+      if (fieldKey === 'keyword' || fieldKey === 'status' || fieldKey === 'docType') continue;
+
+      const qVal = queryValues[fieldKey];
+      if (qVal !== undefined && qVal !== null && qVal !== '' && qVal !== 'ALL') {
+        const rowVal = doc[fieldKey];
+        if (String(rowVal) !== String(qVal)) {
+          return false;
+        }
+      }
+    }
+
+    // 4. 综合模糊关键词搜索
     if (kw) {
       const matchNo = doc.docNo?.toLowerCase().includes(kw);
       const matchPartner = doc.partnerName?.toLowerCase().includes(kw);
       const matchBuyer = doc.buyer?.toLowerCase().includes(kw);
       const matchDept = doc.department?.toLowerCase().includes(kw);
-      if (!matchNo && !matchPartner && !matchBuyer && !matchDept) {
+      const matchStore = doc.storeName?.toLowerCase().includes(kw);
+      const matchContract = doc.contractNo?.toLowerCase().includes(kw);
+      const matchRemarks = doc.remarks?.toLowerCase().includes(kw);
+
+      if (!matchNo && !matchPartner && !matchBuyer && !matchDept && !matchStore && !matchContract && !matchRemarks) {
         return false;
       }
     }
+
     return true;
   });
 });
@@ -516,28 +811,14 @@ const pagedDocuments = computed(() => {
   return filteredDocuments.value.slice(start, start + pageSize.value);
 });
 
-// 过滤变动时重置页码
+// 过滤变动时自动跳回第 1 页
 watch(
-  () => [queryState.keyword, queryState.status, queryState.docType, pageSize.value],
+  () => [queryValues, pageSize.value],
   () => {
     currentPage.value = 1;
-  }
+  },
+  { deep: true }
 );
-
-function formatDocType(type: string) {
-  switch (type) {
-    case 'PURCHASE_ORDER':
-      return '标准采购订单';
-    case 'RETURN_ORDER':
-      return '采购退货单';
-    case 'SALES_DELIVERY':
-      return '销售出库发货单';
-    case 'PROD_REQUISITION':
-      return '生产领料单';
-    default:
-      return type || '通用单据';
-  }
-}
 
 function formatCurrency(val: any) {
   const num = Number(val);

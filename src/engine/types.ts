@@ -1,3 +1,5 @@
+import { Component } from 'vue';
+
 // 通用单据引擎核心类型定义 (Doc Engine Types)
 
 export type DocStatus = 'draft' | 'pending' | 'approved' | 'rejected' | 'voided';
@@ -110,3 +112,62 @@ export interface DeltaPayload {
   master: Record<string, any> & { _flag: DeltaFlag };
   slaves: Record<string, Array<Record<string, any> & { _flag: DeltaFlag }>>;
 }
+
+/**
+ * 单据列表台账顶部 KPI 指标卡配置
+ */
+export interface DocListStatsCardConfig {
+  key: string;
+  label: string;
+  subLabel?: string;
+  icon?: string; // 'Layers' | 'Clock' | 'CheckCircle2' | 'DollarSign' | 'AlertCircle' | 'Package' 等
+  color?: 'indigo' | 'blue' | 'emerald' | 'amber' | 'rose' | 'purple' | 'slate';
+  filterStatus?: string; // 点击卡片直接过滤状态（如 'pending' | 'approved' | 'draft' 等）
+  isCurrency?: boolean;
+  unit?: string; // '单' | '笔' 等
+  compute?: (docs: any[], flatDocs: any[]) => number;
+}
+
+/**
+ * 单据列表台账查询条件表单字段配置
+ */
+export interface DocListSearchFieldConfig {
+  field: string;
+  label: string;
+  type: 'input' | 'select' | 'date';
+  placeholder?: string;
+  width?: string;
+  options?: Array<{ label: string; value: any }>;
+  defaultValue?: any;
+}
+
+/**
+ * 单据列表台账 vxe-table 列配置
+ */
+export interface DocListColumnConfig {
+  field: string;
+  title: string;
+  width?: number | string;
+  minWidth?: number | string;
+  align?: 'left' | 'center' | 'right';
+  sortable?: boolean;
+  fixed?: 'left' | 'right';
+  type?: 'seq' | 'checkbox' | 'docNo' | 'statusBadge' | 'currency' | 'date' | 'partner' | 'actions' | 'custom';
+  format?: 'currency' | 'date' | 'number';
+  cellRenderSlot?: string;
+}
+
+/**
+ * 业务模块单据列表台账独立配置模型 (DocListConfig)
+ * 每个业务模块可在专属 listConfig.ts 中独立维护状态卡片、查询表单与网格列定义
+ */
+export interface DocListConfig {
+  moduleKey: string;
+  moduleName: string;
+  // 支持业务模块完全自定义顶栏状态 HTML 组件 (若配置则替代默认的 4 格卡片)
+  customStatusBarComponent?: Component;
+  statsCards?: DocListStatsCardConfig[];
+  searchFields?: DocListSearchFieldConfig[];
+  columns: DocListColumnConfig[];
+}
+

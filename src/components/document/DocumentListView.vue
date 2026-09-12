@@ -1,44 +1,59 @@
 <template>
   <div class="flex-1 flex flex-col min-h-0 relative">
-    <!-- 架构演示控制条 (用于直观体验：默认样式 vs 自定义插槽覆盖) -->
+    <!-- 架构信息条：展示当前单据模块独立 listConfig.ts 加载状态与模式 -->
     <div class="px-4 py-1.5 bg-slate-800 text-slate-300 text-[11px] border-b border-slate-700 flex flex-wrap items-center justify-between gap-2 shrink-0">
       <div class="flex items-center space-x-2">
-        <span class="font-bold text-indigo-400">单据列表查询 (DocListLedger)</span>
+        <span class="font-bold text-indigo-400">单据列表台账 (DocListLedger)</span>
         <span class="text-slate-500">|</span>
-        <span class="text-slate-400">当前模式演示：</span>
-        <label class="flex items-center space-x-1 cursor-pointer select-none">
-          <input
-            type="checkbox"
-            v-model="customStatusBar"
-            class="rounded border-slate-600 text-indigo-500 focus:ring-0"
-          />
-          <span>自定义状态栏 (插槽 #status-bar)</span>
-        </label>
-        <span class="text-slate-600">•</span>
-        <label class="flex items-center space-x-1 cursor-pointer select-none">
-          <input
-            type="checkbox"
-            v-model="customFilterExtra"
-            class="rounded border-slate-600 text-indigo-500 focus:ring-0"
-          />
-          <span>自定义扩展查询 (插槽 #filter-extra)</span>
-        </label>
+        <span class="inline-flex items-center px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-700 font-mono text-[10px]">
+          模块配置: {{ listConfig?.moduleName || '通用单据列表' }}
+        </span>
+        <span class="text-slate-500">|</span>
+        <span class="text-emerald-400 text-[10px] flex items-center space-x-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>已加载 {{ listConfig?.moduleKey === 'RETURN_ORDER' ? 'returnOrder' : 'purchaseOrder' }}/listConfig.ts 独立文件</span>
+        </span>
       </div>
 
-      <div class="text-[11px] text-slate-400 font-mono">
-        网格已启用真分页模式 (支持 10/20/50/100 条分页)
+      <div class="flex items-center space-x-3">
+        <div class="flex items-center space-x-2 text-slate-400">
+          <span>插槽演示:</span>
+          <label class="flex items-center space-x-1 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              v-model="customStatusBar"
+              class="rounded border-slate-600 text-indigo-500 focus:ring-0"
+            />
+            <span>覆盖状态栏(#status-bar)</span>
+          </label>
+          <span class="text-slate-600">•</span>
+          <label class="flex items-center space-x-1 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              v-model="customFilterExtra"
+              class="rounded border-slate-600 text-indigo-500 focus:ring-0"
+            />
+            <span>扩展筛选(#filter-extra)</span>
+          </label>
+        </div>
+        <span class="text-slate-600">|</span>
+        <div class="text-[11px] text-slate-400 font-mono">
+          真分页 (10/20/50/100 条)
+        </div>
       </div>
     </div>
 
-    <!-- 通用单据列表网格底座组件 (带分页，带可定制插槽) -->
+    <!-- 通用单据列表网格底座组件 (由模块专属 listConfig.ts 驱动，支持插槽二次扩展) -->
     <DocListLedger
       :documents="documents"
+      :list-config="listConfig"
       @open-document="$emit('open-doc-detail', $event)"
       @new-document="$emit('new-document')"
       @duplicate-document="$emit('duplicate-document', $event)"
       @delete-document="$emit('delete-document', $event)"
       @batch-approve="$emit('batch-approve', $event)"
     >
+
       <!-- 2.1 状态栏自定义插槽演示 (如果业务模块自定义就用自定义的，否则就用默认样式) -->
       <template v-if="customStatusBar" #status-bar="{ documents: docList, stats }">
         <div class="bg-gradient-to-r from-indigo-900/90 to-slate-900 p-4 rounded-xl text-white shadow-md border border-indigo-700/50 flex flex-wrap items-center justify-between gap-4">
@@ -97,12 +112,15 @@
 import { ref } from 'vue';
 import { PieChart } from 'lucide-vue-next';
 import { DocListLedger } from '../../engine';
+import { DocListConfig } from '../../engine/types';
 
 defineProps<{
   documents: any[];
+  listConfig?: DocListConfig;
 }>();
 
 defineEmits<{
+
   (e: 'open-doc-detail', docId: string): void;
   (e: 'new-document'): void;
   (e: 'duplicate-document', docId: string): void;

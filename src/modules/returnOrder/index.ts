@@ -1,11 +1,13 @@
 import { BusinessModuleDefinition } from '../types';
 import { returnOrderModuleConfig } from './schema';
+import { returnOrderListConfig } from './listConfig';
 import { useReturnOrderLogic } from './useReturnOrderLogic';
 import ReturnOrderMasterSlot from './ReturnOrderMasterSlot.vue';
 import ReturnOrderRecomposedSidebar from './ReturnOrderRecomposedSidebar.vue';
 import { buildDocumentDeltaPayload } from '../../engine';
 
 export * from './schema';
+export * from './listConfig';
 export * from './useReturnOrderLogic';
 export { default as ReturnOrderMasterSlot } from './ReturnOrderMasterSlot.vue';
 export { default as ReturnOrderRecomposedSidebar } from './ReturnOrderRecomposedSidebar.vue';
@@ -20,12 +22,14 @@ export const returnOrderModule: BusinessModuleDefinition = {
   enableGridFilter: false,
   enableGridSort: false,
   config: returnOrderModuleConfig,
+  listConfig: returnOrderListConfig,
   slaveColumns: returnOrderModuleConfig.slaves.ReturnItem.columns,
   useLogic: useReturnOrderLogic,
   logic: useReturnOrderLogic(),
   MasterSlotComponent: ReturnOrderMasterSlot,
   RecomposedSidebarComponent: ReturnOrderRecomposedSidebar,
   buildDeltaPayload: (doc, isDirty) => {
+
     return buildDocumentDeltaPayload(
       doc.header,
       false,

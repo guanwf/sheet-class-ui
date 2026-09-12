@@ -1,5 +1,5 @@
 import { Component } from 'vue';
-import { DocModuleConfig, SlaveColumnConfig, DeltaPayload } from '../engine/types';
+import { DocModuleConfig, SlaveColumnConfig, DeltaPayload, DocListConfig } from '../engine/types';
 import { DocumentRecord } from '../types/document';
 
 /**
@@ -15,6 +15,8 @@ export interface BusinessModuleDefinition {
   itemsTitle: string;
   config: DocModuleConfig;
   slaveColumns: SlaveColumnConfig[];
+  // 单据列表台账专属配置 (状态卡片、查询表单、网格列)
+  listConfig: DocListConfig;
   // 网格能力特性自定义：采购单开启，退货单不开启
   enableGridFilter: boolean;
   enableGridSort: boolean;
@@ -27,3 +29,4 @@ export interface BusinessModuleDefinition {
   // 业务模块自身维护的增量保存报文生成器
   buildDeltaPayload: (doc: DocumentRecord, isDirty: boolean) => DeltaPayload;
 }
+

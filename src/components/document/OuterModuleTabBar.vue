@@ -3,7 +3,7 @@
     <!-- 最外层业务模块 TabPage 导航栏 (一个模块在最外层占一个 Page 页) -->
     <div class="flex items-center space-x-1.5 py-1">
       <div class="text-[11px] font-semibold text-slate-400 mr-2 flex items-center space-x-1">
-        <Layers class="w-3.5 h-3.5 text-indigo-400" />
+        <Layers class="w-3.5 h-3.5 text-[#7ba5d4]" />
         <span class="tracking-wide">业务模块中心:</span>
       </div>
 
@@ -13,16 +13,16 @@
         type="button"
         @click="$emit('select-module', mod.id)"
         :class="[
-          'relative flex items-center h-8 px-3.5 rounded-lg text-xs font-medium transition-all duration-150 cursor-pointer border',
+          'relative flex items-center h-8 px-3 rounded-t text-xs font-medium transition-all duration-150 cursor-pointer border-t border-x',
           mod.id === activeModuleId
-            ? 'bg-slate-800 text-white border-indigo-500/80 shadow-xs'
-            : 'bg-slate-900/60 text-slate-400 border-slate-800 hover:bg-slate-800/60 hover:text-slate-200'
+            ? 'bg-slate-800 text-white border-[#25548d] shadow-xs'
+            : 'bg-slate-900/60 text-slate-400 border-transparent hover:bg-slate-800/60 hover:text-slate-200'
         ]"
       >
         <!-- 激活高亮边角指示条 -->
         <span
           v-if="mod.id === activeModuleId"
-          class="absolute bottom-0 left-3 right-3 h-0.5 bg-indigo-500 rounded-full"
+          class="absolute bottom-0 left-2 right-2 h-0.5 bg-[#3a79c3] rounded-full"
         />
 
         <!-- 模块图标 -->

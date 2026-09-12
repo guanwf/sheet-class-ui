@@ -4,11 +4,11 @@
     <header class="h-10 bg-slate-900 border-b border-slate-800 text-white px-3 flex items-center justify-between text-xs shrink-0">
       <div class="flex items-center space-x-3">
         <div class="flex items-center space-x-2 font-bold text-sm tracking-wide">
-          <div class="w-6 h-6 rounded bg-indigo-600 flex items-center justify-center text-white shadow-2xs font-mono font-black text-xs">
+          <div class="w-6 h-6 rounded bg-[#25548d] flex items-center justify-center text-white shadow-2xs font-mono font-black text-xs">
             ERP
           </div>
           <span class="text-slate-100">智造云</span>
-          <span class="text-indigo-400 font-normal">| 模块化企业主从表单据系统</span>
+          <span class="text-[#7ba5d4] font-normal">| 模块化企业主从表单据系统</span>
         </div>
 
         <span class="text-slate-700">/</span>
@@ -16,7 +16,7 @@
         <!-- 顶部快捷模块状态指示 -->
         <div class="hidden sm:flex items-center text-slate-400 text-[11px] space-x-1">
           <span>当前激活模块:</span>
-          <span class="text-indigo-300 font-semibold">
+          <span class="text-[#93c5fd] font-semibold">
             {{ activeModuleId === 'RETURN_ORDER' ? '🔄 采购退货单 (RO)' : '📦 采购订单 (PO)' }}
           </span>
         </div>
@@ -25,15 +25,15 @@
       <!-- 右侧操作与用户信息 -->
       <div class="flex items-center space-x-3 text-slate-400 text-[11px]">
         <!-- 密度切换开关 -->
-        <div class="flex items-center bg-slate-800 p-0.5 rounded-md border border-slate-700">
-          <span class="text-[10px] text-slate-400 px-1.5 font-medium">显示密度:</span>
+        <div class="flex items-center bg-slate-800 p-0.5 rounded border border-slate-700">
+          <span class="text-[10px] text-slate-400 px-1 font-medium">显示密度:</span>
           <button
             type="button"
             @click="setDensity('compact')"
             :class="[
               'px-2 py-0.5 rounded text-[11px] font-medium transition flex items-center space-x-1',
               uiDensity === 'compact'
-                ? 'bg-indigo-600 text-white shadow-2xs font-semibold'
+                ? 'bg-[#25548d] text-white shadow-2xs font-semibold'
                 : 'text-slate-400 hover:text-slate-200'
             ]"
             title="紧凑模式：主表栅格横向紧凑、网格行高 30px、一屏可见更多行明细"
@@ -46,7 +46,7 @@
             :class="[
               'px-2 py-0.5 rounded text-[11px] font-medium transition flex items-center space-x-1',
               uiDensity === 'standard'
-                ? 'bg-indigo-600 text-white shadow-2xs font-semibold'
+                ? 'bg-[#25548d] text-white shadow-2xs font-semibold'
                 : 'text-slate-400 hover:text-slate-200'
             ]"
             title="标准模式：舒适排版与间距"
@@ -57,7 +57,7 @@
 
         <div class="flex items-center space-x-1 bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700/50">
           <span class="text-slate-400">总业务单据:</span>
-          <strong class="text-indigo-300 font-mono font-bold">{{ totalDocCount }}</strong>
+          <strong class="text-[#93c5fd] font-mono font-bold">{{ totalDocCount }}</strong>
         </div>
 
         <div class="flex items-center space-x-1.5 text-slate-300">
@@ -134,6 +134,7 @@ import { DocumentRecord, ModuleKey } from '../types/document';
 import OuterModuleTabBar from '../components/document/OuterModuleTabBar.vue';
 import DocModuleWorkspace from '../components/document/DocModuleWorkspace.vue';
 import PrintPreviewModal from '../components/document/PrintPreviewModal.vue';
+import { message } from 'ant-design-vue';
 
 const store = useStore<State>();
 
@@ -144,13 +145,14 @@ const uiDensity = computed<'compact' | 'standard'>(() => store.getters.uiDensity
 
 const setDensity = (density: 'compact' | 'standard') => {
   store.commit('SET_UI_DENSITY', density);
-  showToast(`已切换至${density === 'compact' ? '紧凑高密模式' : '标准舒适模式'}`);
+  message.success(`已切换至${density === 'compact' ? '紧凑高密模式' : '标准舒适模式'}`);
 };
 
 const toastMsg = ref<string | null>(null);
 const printTargetDoc = ref<DocumentRecord | null>(null);
 
 const showToast = (msg: string) => {
+  message.info(msg);
   toastMsg.value = msg;
   setTimeout(() => {
     if (toastMsg.value === msg) {

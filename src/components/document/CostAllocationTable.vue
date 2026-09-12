@@ -7,7 +7,7 @@
           v-if="!isReadOnly"
           type="button"
           @click="onAddCost"
-          class="inline-flex items-center px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-2xs transition"
+          class="inline-flex items-center px-2.5 py-1 rounded bg-[#25548d] hover:bg-[#1e4676] active:bg-[#183860] text-white font-medium shadow-2xs transition"
         >
           <Plus class="w-3.5 h-3.5 mr-1" />
           新增分摊费用
@@ -18,7 +18,7 @@
       </div>
 
       <div class="text-slate-500 font-mono text-xs">
-        费用总计: <strong class="text-indigo-700 font-bold">¥{{ totalCost.toFixed(2) }}</strong>
+        费用总计: <strong class="text-[#25548d] font-bold">¥{{ totalCost.toFixed(2) }}</strong>
       </div>
     </div>
 

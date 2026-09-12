@@ -67,8 +67,9 @@
   background-color: #3b82f6;
 }
 
+.erp-dot-primary,
 .erp-dot-indigo {
-  background-color: #6366f1;
+  background-color: #25548d;
 }
 
 .erp-dot-muted,
@@ -102,9 +103,9 @@
 }
 
 .erp-badge-code-active {
-  background-color: rgba(79, 70, 229, 0.3);
-  color: #a5b4fc;
-  border-color: rgba(99, 102, 241, 0.4);
+  background-color: rgba(37, 84, 141, 0.3);
+  color: #93c5fd;
+  border-color: rgba(37, 84, 141, 0.5);
   font-weight: 700;
 }
 
@@ -127,7 +128,7 @@
 }
 
 .erp-badge-counter-active {
-  background-color: #6366f1;
+  background-color: #25548d;
   color: #ffffff;
 }
 
@@ -169,8 +170,8 @@
 }
 
 .erp-subtab-badge-active {
-  background-color: #e0e7ff;
-  color: #4338ca;
+  background-color: #e8f1fa;
+  color: #1c406c;
 }
 
 .erp-subtab-badge-idle {
@@ -187,11 +188,11 @@
 }
 
 .vxe-table--render-default .vxe-cell--filter:hover {
-  color: #4f46e5;
+  color: #25548d;
 }
 
 .vxe-table--render-default .vxe-cell--filter.is--active {
-  color: #4f46e5;
+  color: #25548d;
 }
 
 .vxe-table--render-default .vxe-cell--sort {

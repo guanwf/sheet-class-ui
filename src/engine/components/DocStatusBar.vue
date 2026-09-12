@@ -26,8 +26,8 @@
           <strong class="text-slate-200 font-mono">¥{{ formatNumber(computedSummary.totalTaxAmount) }}</strong>
         </div>
 
-        <div class="flex items-center space-x-1.5 bg-indigo-900/60 px-2 py-0.5 rounded border border-indigo-700/50">
-          <span class="text-indigo-200 font-medium">价税合计:</span>
+        <div class="flex items-center space-x-1.5 bg-[#163050] px-2 py-0.5 rounded border border-[#25548d]/60">
+          <span class="text-[#93c5fd] font-medium">价税合计:</span>
           <strong class="text-emerald-400 font-mono font-bold text-sm">
             ¥{{ formatNumber(computedSummary.totalAmountWithTax) }}
           </strong>

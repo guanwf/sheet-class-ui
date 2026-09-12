@@ -34,7 +34,7 @@
       <!-- 左侧：3 种布局模式切换 Pills -->
       <div class="flex items-center space-x-2 flex-wrap">
         <span class="font-bold text-white flex items-center space-x-1.5 mr-1">
-          <Layout class="w-4 h-4 text-indigo-400" />
+          <Layout class="w-4 h-4 text-[#7ba5d4]" />
           <span>页面布局模式切换：</span>
         </span>
 
@@ -45,11 +45,11 @@
           :class="[
             'px-3 py-1 rounded-md text-xs font-medium transition flex items-center space-x-1.5',
             layoutMode === 'config'
-              ? 'bg-indigo-600 text-white shadow-xs'
+              ? 'bg-[#25548d] text-white shadow-xs'
               : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
           ]"
         >
-          <span class="erp-dot" :class="layoutMode === 'config' ? 'bg-white' : 'bg-indigo-400'"></span>
+          <span class="erp-dot" :class="layoutMode === 'config' ? 'bg-white' : 'bg-[#7ba5d4]'"></span>
           <span>1. 配置驱动 (schema.ts)</span>
         </button>
 
@@ -94,7 +94,7 @@
             :class="[
               'px-2 py-0.5 rounded text-[11px] font-medium transition flex items-center space-x-1',
               uiDensity === 'compact'
-                ? 'bg-indigo-600 text-white shadow-2xs font-semibold'
+                ? 'bg-[#25548d] text-white shadow-2xs font-semibold'
                 : 'text-slate-400 hover:text-slate-200'
             ]"
             title="紧凑模式：主表横向行内排布、单元格行高 30px、一屏可看更多行明细"
@@ -108,7 +108,7 @@
             :class="[
               'px-2 py-0.5 rounded text-[11px] font-medium transition flex items-center space-x-1',
               uiDensity === 'standard'
-                ? 'bg-indigo-600 text-white shadow-2xs font-semibold'
+                ? 'bg-[#25548d] text-white shadow-2xs font-semibold'
                 : 'text-slate-400 hover:text-slate-200'
             ]"
             title="标准模式：舒适排版与间距"
@@ -121,10 +121,10 @@
         <button
           type="button"
           @click="showGuideModal = true"
-          class="inline-flex items-center px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-indigo-500/40 font-medium text-xs transition"
+          class="inline-flex items-center px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[#93c5fd] border border-[#25548d]/50 font-medium text-xs transition"
           title="查看 3 种布局方式写在哪个文件与示例代码"
         >
-          <BookOpen class="w-3.5 h-3.5 mr-1 text-indigo-400" />
+          <BookOpen class="w-3.5 h-3.5 mr-1 text-[#7ba5d4]" />
           查看代码写在哪里 (Where to write)
         </button>
 
@@ -143,14 +143,14 @@
     <!-- 模式 1 专有：交互式 schema 配置调参演示面板 -->
     <div
       v-if="layoutMode === 'config'"
-      class="px-4 py-2 bg-indigo-50/80 border-b border-indigo-200 text-xs text-indigo-900 flex flex-wrap items-center justify-between gap-3 shrink-0"
+      class="px-4 py-2 bg-[#f0f5fa] border-b border-[#cbdff2] text-xs text-[#1c406c] flex flex-wrap items-center justify-between gap-3 shrink-0"
     >
       <div class="flex items-center space-x-2">
-        <span class="font-bold text-indigo-700 flex items-center space-x-1">
-          <Settings2 class="w-4 h-4 text-indigo-600" />
+        <span class="font-bold text-[#25548d] flex items-center space-x-1">
+          <Settings2 class="w-4 h-4 text-[#25548d]" />
           <span>【方式一演示】改配置调排版 (schema.ts 动态响应)：</span>
         </span>
-        <span class="text-indigo-600 hidden md:inline text-[11px]">
+        <span class="text-[#2e5e94] hidden md:inline text-[11px]">
           点击下方按钮调整 span 栅格占比 (1~6列)，观察主表如何自动响应重排：
         </span>
       </div>
@@ -158,7 +158,7 @@
       <!-- 动态交互微调按钮组 -->
       <div class="flex items-center space-x-3 text-[11px] flex-wrap gap-y-1">
         <!-- 单据日期 span -->
-        <div class="flex items-center space-x-1 bg-white px-2 py-0.5 rounded border border-indigo-200">
+        <div class="flex items-center space-x-1 bg-white px-2 py-0.5 rounded border border-[#cbdff2]">
           <span class="text-slate-600 font-medium">日期宽度:</span>
           <button
             v-for="s in [1, 2, 3]"
@@ -167,7 +167,7 @@
             @click="setFieldSpan('docDate', s)"
             :class="[
               'px-1.5 py-0.2 rounded font-mono font-bold',
-              getFieldSpan('docDate') === s ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-indigo-50'
+              getFieldSpan('docDate') === s ? 'bg-[#25548d] text-white' : 'text-slate-600 hover:bg-[#e4effa]'
             ]"
           >
             {{ s }}格
@@ -175,7 +175,7 @@
         </div>
 
         <!-- 供应商 span -->
-        <div class="flex items-center space-x-1 bg-white px-2 py-0.5 rounded border border-indigo-200">
+        <div class="flex items-center space-x-1 bg-white px-2 py-0.5 rounded border border-[#cbdff2]">
           <span class="text-slate-600 font-medium">供应商宽度:</span>
           <button
             v-for="s in [1, 2, 3, 4]"
@@ -184,7 +184,7 @@
             @click="setFieldSpan('partnerId', s)"
             :class="[
               'px-1.5 py-0.2 rounded font-mono font-bold',
-              getFieldSpan('partnerId') === s ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-indigo-50'
+              getFieldSpan('partnerId') === s ? 'bg-[#25548d] text-white' : 'text-slate-600 hover:bg-[#e4effa]'
             ]"
           >
             {{ s }}格
@@ -192,7 +192,7 @@
         </div>
 
         <!-- 交货地址 span -->
-        <div class="flex items-center space-x-1 bg-white px-2 py-0.5 rounded border border-indigo-200">
+        <div class="flex items-center space-x-1 bg-white px-2 py-0.5 rounded border border-[#cbdff2]">
           <span class="text-slate-600 font-medium">地址宽度:</span>
           <button
             v-for="s in [2, 3, 4, 6]"
@@ -201,7 +201,7 @@
             @click="setFieldSpan('deliveryAddress', s)"
             :class="[
               'px-1.5 py-0.2 rounded font-mono font-bold',
-              getFieldSpan('deliveryAddress') === s ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-indigo-50'
+              getFieldSpan('deliveryAddress') === s ? 'bg-[#25548d] text-white' : 'text-slate-600 hover:bg-[#e4effa]'
             ]"
           >
             {{ s }}格
@@ -211,7 +211,7 @@
         <button
           type="button"
           @click="resetConfigSpans"
-          class="text-indigo-600 hover:text-indigo-800 underline font-medium text-[11px]"
+          class="text-[#25548d] hover:text-[#183a62] underline font-medium text-[11px]"
         >
           重置默认
         </button>
@@ -328,7 +328,7 @@
 
         <!-- 方式二插槽演示：右侧追加专属单据防伪哈希 -->
         <template v-if="layoutMode === 'slot'" #footer-right>
-          <span class="text-indigo-400 font-mono text-[11px]">单据哈希: {{ doc.header.id.slice(-8) }}</span>
+          <span class="text-[#7ba5d4] font-mono text-[11px]">单据哈希: {{ doc.header.id.slice(-8) }}</span>
         </template>
       </DocStatusBar>
     </template>
@@ -340,7 +340,7 @@
         <div class="w-80 md:w-96 bg-white border-r border-slate-200 flex flex-col min-h-0 shrink-0 shadow-xs">
           <div class="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between shrink-0">
             <div class="flex items-center space-x-2">
-              <FileText class="w-4 h-4 text-indigo-600" />
+              <FileText class="w-4 h-4 text-[#25548d]" />
               <h3 class="font-bold text-xs text-slate-800">单据头信息 (左栏紧凑呈现)</h3>
             </div>
             <span class="text-[10px] px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 font-mono font-semibold">
@@ -353,7 +353,7 @@
             <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between">
               <div>
                 <span class="text-[10px] text-slate-400 block">单据编号</span>
-                <span class="font-mono font-bold text-indigo-700 text-sm">{{ doc.header.docNo }}</span>
+                <span class="font-mono font-bold text-[#25548d] text-sm">{{ doc.header.docNo }}</span>
               </div>
               <span
                 v-if="doc.header.status === 'approved'"

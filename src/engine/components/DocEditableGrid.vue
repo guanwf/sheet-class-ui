@@ -13,12 +13,12 @@
     >
       <div :class="['bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs select-none shrink-0 transition-all', isCompact ? 'px-2 py-1' : 'p-2']">
         <!-- 左侧快捷动作组 -->
-        <div class="flex items-center space-x-1.5 flex-wrap">
+        <div class="flex items-center gap-2 flex-wrap">
           <button
             v-if="!readonly && config.allowAdd !== false"
             type="button"
             @click="onAddRow()"
-            :class="['inline-flex items-center rounded bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition shadow-2xs', isCompact ? 'px-2 py-0.5 text-[11.5px]' : 'px-2.5 py-1']"
+            :class="['inline-flex items-center rounded bg-[#25548d] hover:bg-[#1e4676] active:bg-[#183860] text-white font-medium transition shadow-2xs', isCompact ? 'px-2 py-0.5 text-[11.5px]' : 'px-2.5 py-1']"
             title="追加一行空白记录"
           >
             <Plus :class="isCompact ? 'w-3 h-3 mr-0.5' : 'w-3.5 h-3.5 mr-1'" />
@@ -84,7 +84,7 @@
         </div>
 
         <!-- 右侧：过滤与排序控制区、快捷键提示与导出 -->
-        <div class="flex items-center space-x-2 text-slate-500 text-xs flex-wrap gap-y-1">
+        <div class="flex items-center space-x-2.5 text-slate-500 text-xs flex-wrap gap-y-1">
           <!-- 1. 快速文本检索过滤 (过滤特性开启时展示) -->
           <div v-if="isFilterEnabled" class="relative flex items-center">
             <Search class="w-3.5 h-3.5 absolute left-2 text-slate-400 pointer-events-none" />

@@ -46,18 +46,18 @@ MAT-1003	工业级固态电容	16V 470uF	200	3.20"
       <!-- 底栏动作 -->
       <div class="px-5 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
         <span class="text-xs text-slate-400">已识别约 {{ parsedRowCount }} 行明细</span>
-        <div class="flex items-center space-x-2">
+        <div class="flex items-center space-x-3">
           <button
             type="button"
             @click="$emit('close')"
-            class="px-3 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-medium transition"
+            class="px-3 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-medium transition cursor-pointer"
           >
             取消
           </button>
           <button
             type="button"
             @click="handleImport"
-            class="px-4 py-1.5 rounded bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs transition"
+            class="px-4 py-1.5 rounded bg-[#25548d] hover:bg-[#1e4676] active:bg-[#183860] text-white text-xs font-medium shadow-xs transition cursor-pointer"
           >
             确认批量追加
           </button>

@@ -7,7 +7,7 @@
       <!-- 弹窗顶栏 -->
       <div class="px-5 py-3 border-b border-slate-200 flex items-center justify-between bg-slate-50">
         <div class="flex items-center space-x-2">
-          <Printer class="w-4 h-4 text-indigo-600" />
+          <PrinterOutlined class="text-indigo-600 text-base" />
           <h3 class="text-sm font-bold text-slate-800">标准企业采购订单打印预览</h3>
         </div>
 
@@ -15,17 +15,17 @@
           <button
             type="button"
             @click="triggerPrint"
-            class="px-3 py-1.5 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs shadow-2xs transition flex items-center space-x-1"
+            class="px-3 py-1.5 rounded bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs shadow-2xs transition flex items-center space-x-1 cursor-pointer"
           >
-            <Printer class="w-3.5 h-3.5 mr-1" />
+            <PrinterOutlined />
             <span>立即打印凭证</span>
           </button>
           <button
             type="button"
             @click="$emit('close')"
-            class="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition"
+            class="p-1.5 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition cursor-pointer"
           >
-            <X class="w-4 h-4" />
+            <CloseOutlined class="text-sm" />
           </button>
         </div>
       </div>
@@ -135,7 +135,7 @@
 import { computed } from 'vue';
 import { DocumentRecord } from '../../types/document';
 import { computeDocumentSummary } from '../../utils/formulas';
-import { Printer, X } from 'lucide-vue-next';
+import { PrinterOutlined, CloseOutlined } from '@ant-design/icons-vue';
 
 const props = defineProps<{
   visible: boolean;

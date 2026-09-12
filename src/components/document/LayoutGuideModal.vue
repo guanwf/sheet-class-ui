@@ -179,7 +179,7 @@ export const purchaseOrderModuleConfig: DocumentModuleConfig = {
         <button
           type="button"
           @click="$emit('update:visible', false)"
-          class="px-4 py-1.5 rounded bg-indigo-600 hover:bg-indigo-700 text-white font-medium shadow-2xs text-xs"
+          class="px-4 py-1.5 rounded bg-[#25548d] hover:bg-[#1e4676] active:bg-[#183860] text-white font-medium shadow-2xs text-xs cursor-pointer"
         >
           我知道了，关闭
         </button>

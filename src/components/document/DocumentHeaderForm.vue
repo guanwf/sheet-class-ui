@@ -5,7 +5,7 @@
       <div class="flex items-center space-x-3">
         <h2 class="text-base font-bold text-slate-800 flex items-center space-x-2">
           <span>{{ title }}</span>
-          <span class="font-mono text-sm font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
+          <span class="font-mono text-sm font-semibold text-[#25548d] bg-[#f0f5fa] px-2 py-0.5 rounded border border-[#cbdff2]">
             {{ header.docNo }}
           </span>
         </h2>
@@ -55,7 +55,7 @@
         <button
           type="button"
           @click="expanded = !expanded"
-          class="text-indigo-600 hover:text-indigo-800 font-medium ml-2 flex items-center space-x-1"
+          class="text-[#25548d] hover:text-[#183a62] font-medium ml-2 flex items-center space-x-1"
         >
           <span>{{ expanded ? '收起表头' : '展开表头' }}</span>
           <ChevronDown :class="['w-3.5 h-3.5 transition-transform duration-200', expanded ? 'rotate-180' : '']" />

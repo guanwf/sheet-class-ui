@@ -32,7 +32,7 @@
         ]"
         title="清空当前选择"
       >
-        <X :class="isCompact ? 'w-3 h-3' : 'w-3.5 h-3.5'" />
+        <CloseCircleFilled :class="['text-slate-400 hover:text-rose-500', isCompact ? 'text-xs' : 'text-sm']" />
       </button>
 
       <!-- 核心：小查询图标按钮 (点击此图标弹出查询精灵，已按需求去除文字) -->
@@ -46,7 +46,7 @@
         ]"
         :title="`查询${currentConfig?.title || '精灵'}`"
       >
-        <Search :class="isCompact ? 'w-3 h-3' : 'w-3.5 h-3.5'" />
+        <SearchOutlined :class="isCompact ? 'text-[11px]' : 'text-xs'" />
       </button>
     </div>
 
@@ -64,7 +64,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { useStore } from 'vuex';
-import { Search, X } from 'lucide-vue-next';
+import { SearchOutlined, CloseCircleFilled } from '@ant-design/icons-vue';
 import SpiritModal from './SpiritModal.vue';
 import { spiritRegistry } from './spiritRegistry';
 import { SpiritKey, SpiritFieldMapping } from './types';

@@ -17,22 +17,22 @@
         <!-- 顶部激活指示条 -->
         <span
           v-if="tab.id === activeTabId"
-          class="absolute top-0 left-0 right-0 h-0.5 bg-indigo-600 rounded-t-md"
+          class="absolute top-0 left-0 right-0 h-0.5 bg-[#25548d] rounded-t"
         />
 
         <!-- 图标 -->
         <ListFilter
           v-if="tab.type === 'LIST'"
           :class="[
-            'w-3.5 h-3.5 mr-1.5 shrink-0',
-            tab.id === activeTabId ? 'text-indigo-600' : 'text-slate-400 group-hover:text-slate-600'
+            'w-3.5 h-3.5 mr-1 shrink-0',
+            tab.id === activeTabId ? 'text-[#25548d]' : 'text-slate-400 group-hover:text-slate-600'
           ]"
         />
-        <div v-else class="mr-1.5 shrink-0 flex items-center space-x-1">
+        <div v-else class="mr-1 shrink-0 flex items-center space-x-1">
           <FileText
             :class="[
               'w-3.5 h-3.5',
-              tab.id === activeTabId ? 'text-indigo-600' : 'text-slate-400 group-hover:text-slate-600'
+              tab.id === activeTabId ? 'text-[#25548d]' : 'text-slate-400 group-hover:text-slate-600'
             ]"
           />
           <span
@@ -93,11 +93,11 @@
       </div>
 
       <!-- 快捷新建单据标签按钮组 -->
-      <div class="relative flex items-center ml-1" ref="newDocMenuRef">
+      <div class="relative flex items-center ml-1.5" ref="newDocMenuRef">
         <button
           type="button"
           @click="$emit('new-doc-tab')"
-          class="flex items-center space-x-1 h-7 px-2 rounded hover:bg-white/80 text-slate-600 hover:text-indigo-600 transition font-medium text-xs"
+          class="flex items-center space-x-1 h-7 px-2.5 rounded hover:bg-white/90 text-slate-700 hover:text-indigo-600 transition font-medium text-xs cursor-pointer shadow-2xs bg-slate-100/80"
           title="快捷新建单据标签页"
         >
           <Plus class="w-3.5 h-3.5" />
@@ -106,7 +106,7 @@
         <button
           type="button"
           @click="showNewDocMenu = !showNewDocMenu"
-          class="h-7 px-1 rounded hover:bg-white/80 text-slate-400 hover:text-slate-700 transition"
+          class="h-7 px-1.5 rounded hover:bg-white/90 text-slate-500 hover:text-slate-800 transition cursor-pointer ml-0.5 shadow-2xs bg-slate-100/80"
           title="选择单据类型新建"
         >
           <ChevronDown class="w-3 h-3" />
@@ -122,7 +122,7 @@
               showNewDocMenu = false;
               $emit('new-doc-tab', 'PURCHASE_ORDER');
             "
-            class="w-full text-left px-3 py-1.5 hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 flex items-center space-x-2"
+            class="w-full text-left px-3 py-1.5 hover:bg-indigo-50 text-slate-700 hover:text-indigo-700 flex items-center space-x-2 cursor-pointer"
           >
             <span class="text-sm">📦</span>
             <div class="flex flex-col">
@@ -136,7 +136,7 @@
               showNewDocMenu = false;
               $emit('new-doc-tab', 'RETURN_ORDER');
             "
-            class="w-full text-left px-3 py-1.5 hover:bg-rose-50 text-slate-700 hover:text-rose-700 flex items-center space-x-2"
+            class="w-full text-left px-3 py-1.5 hover:bg-rose-50 text-slate-700 hover:text-rose-700 flex items-center space-x-2 cursor-pointer"
           >
             <span class="text-sm">🔄</span>
             <div class="flex flex-col">

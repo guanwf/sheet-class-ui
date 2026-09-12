@@ -40,65 +40,62 @@
             class="text-slate-400 hover:text-white p-1 rounded-md hover:bg-white/10 transition cursor-pointer"
             title="关闭窗口 (Esc)"
           >
-            <X class="w-5 h-5" />
+            <CloseOutlined class="text-sm" />
           </button>
         </div>
 
         <!-- 2. 上部结构：查询条件表单区 (Search Filters) -->
-        <div class="p-4 bg-slate-50 border-b border-slate-200/80 shrink-0">
-          <form @submit.prevent="handleSearch" class="flex flex-wrap items-center gap-3">
+        <div class="p-3.5 bg-slate-50 border-b border-slate-200/80 shrink-0">
+          <form @submit.prevent="handleSearch" class="flex flex-wrap items-center gap-2.5">
             <template v-for="field in spiritConfig?.searchFields || []" :key="field.field">
               <!-- 文本输入查询条件 -->
               <div
                 v-if="!field.type || field.type === 'input'"
-                class="flex items-center space-x-2 text-xs"
+                class="flex items-center space-x-1.5 text-xs"
               >
                 <label class="text-slate-600 font-medium whitespace-nowrap">{{ field.label }}:</label>
-                <input
-                  type="text"
-                  v-model="searchParams[field.field]"
+                <a-input
+                  v-model:value="searchParams[field.field]"
+                  size="small"
+                  allow-clear
                   :placeholder="field.placeholder || `请输入${field.label}...`"
-                  class="h-8 px-2.5 bg-white border border-slate-300 rounded text-xs text-slate-800 placeholder-slate-400 focus:border-indigo-500 focus:outline-none w-48 shadow-2xs"
+                  class="w-44"
                 />
               </div>
 
               <!-- 下拉选择查询条件 -->
               <div
                 v-else-if="field.type === 'select'"
-                class="flex items-center space-x-2 text-xs"
+                class="flex items-center space-x-1.5 text-xs"
               >
                 <label class="text-slate-600 font-medium whitespace-nowrap">{{ field.label }}:</label>
-                <select
-                  v-model="searchParams[field.field]"
-                  class="h-8 px-2 bg-white border border-slate-300 rounded text-xs text-slate-800 focus:border-indigo-500 focus:outline-none min-w-32 shadow-2xs"
-                >
-                  <option
-                    v-for="opt in field.options || []"
-                    :key="opt.value"
-                    :value="opt.value"
-                  >
-                    {{ opt.label }}
-                  </option>
-                </select>
+                <a-select
+                  v-model:value="searchParams[field.field]"
+                  :options="field.options"
+                  size="small"
+                  allow-clear
+                  placeholder="请选择"
+                  class="w-32"
+                />
               </div>
             </template>
 
             <!-- 按钮组 -->
-            <div class="flex items-center space-x-2 ml-auto">
+            <div class="flex items-center space-x-2.5 ml-auto">
               <button
                 type="submit"
                 :disabled="loading"
-                class="h-8 px-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-medium flex items-center space-x-1.5 shadow-xs transition cursor-pointer disabled:opacity-50"
+                class="h-7 px-3.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded text-xs font-medium flex items-center space-x-1.5 shadow-2xs transition cursor-pointer disabled:opacity-50"
               >
-                <Search class="w-3.5 h-3.5" />
+                <SearchOutlined />
                 <span>{{ loading ? '查询中...' : '查询' }}</span>
               </button>
               <button
                 type="button"
                 @click="handleReset"
-                class="h-8 px-3 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 rounded text-xs font-medium flex items-center space-x-1 shadow-2xs transition cursor-pointer"
+                class="h-7 px-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded text-xs font-medium flex items-center space-x-1.5 shadow-2xs transition cursor-pointer"
               >
-                <RotateCcw class="w-3 h-3 text-slate-500" />
+                <ReloadOutlined />
                 <span>重置</span>
               </button>
             </div>
@@ -242,7 +239,7 @@
           <div class="flex items-center space-x-2 text-xs truncate max-w-[65%]">
             <span class="text-slate-500 shrink-0">当前已选:</span>
             <template v-if="isMultipleMode && selectedRows.length > 0">
-              <span class="font-mono font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded shrink-0">
+              <span class="font-mono font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded shrink-0">
                 已勾选 {{ selectedRows.length }} 项
               </span>
               <span class="text-slate-600 truncate text-[11px]">
@@ -251,7 +248,7 @@
             </template>
             <span
               v-else-if="selectedRow"
-              class="font-mono font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded flex items-center space-x-1 truncate"
+              class="font-mono font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded flex items-center space-x-1 truncate"
             >
               <span>[{{ selectedRow[spiritConfig?.valueField || 'id'] }}]</span>
               <span>{{ selectedRow[spiritConfig?.displayField || 'name'] }}</span>
@@ -262,11 +259,11 @@
           </div>
 
           <!-- 右侧：按钮组 -->
-          <div class="flex items-center space-x-2.5 shrink-0">
+          <div class="flex items-center space-x-3 shrink-0">
             <button
               type="button"
               @click="onClose"
-              class="px-4 py-1.5 border border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-white transition cursor-pointer shadow-2xs"
+              class="px-4 py-1.5 border border-slate-300 rounded-md text-xs font-medium text-slate-700 hover:bg-white transition cursor-pointer shadow-2xs"
             >
               取消
             </button>
@@ -274,9 +271,9 @@
               type="button"
               @click="onConfirm"
               :disabled="!selectedRow && selectedRows.length === 0"
-              class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-medium transition cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed flex items-center space-x-1.5"
+              class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-md text-xs font-medium transition cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed flex items-center space-x-1.5"
             >
-              <Check class="w-3.5 h-3.5" />
+              <CheckOutlined />
               <span>{{ isMultipleMode && selectedRows.length > 1 ? `确定选择 (${selectedRows.length}项)` : '确定选择' }}</span>
             </button>
           </div>
@@ -288,7 +285,12 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch, computed } from 'vue';
-import { X, Search, RotateCcw, Check } from 'lucide-vue-next';
+import {
+  CloseOutlined,
+  SearchOutlined,
+  ReloadOutlined,
+  CheckOutlined,
+} from '@ant-design/icons-vue';
 import { VxeTableInstance } from 'vxe-table';
 import { SpiritConfig } from './types';
 

@@ -11,6 +11,9 @@ import 'vxe-pc-ui/lib/style.css';
 
 import VXETablePluginShortcutKey from 'vxe-table-plugin-shortcut-key';
 
+import Antd from 'ant-design-vue';
+import 'ant-design-vue/dist/reset.css';
+
 import './index.css';
 
 // 注册 vxe-table 快捷键插件
@@ -21,5 +24,6 @@ app.use(store);
 app.use(router);
 app.use(VxePCUI);
 app.use(VxeTable);
+app.use(Antd);
 
 app.mount('#app');

@@ -26,7 +26,7 @@
               type="button"
               @click="localSchemaKey = 'PURCHASE_ORDER'"
               :class="[
-                'p-2.5 rounded-lg border text-left transition',
+                'p-2.5 rounded-lg border text-left transition cursor-pointer',
                 localSchemaKey === 'PURCHASE_ORDER'
                   ? 'border-indigo-600 bg-indigo-50/70 text-indigo-900 font-semibold'
                   : 'border-slate-200 hover:bg-slate-50 text-slate-700'
@@ -40,7 +40,7 @@
               type="button"
               @click="localSchemaKey = 'SALES_DELIVERY'"
               :class="[
-                'p-2.5 rounded-lg border text-left transition',
+                'p-2.5 rounded-lg border text-left transition cursor-pointer',
                 localSchemaKey === 'SALES_DELIVERY'
                   ? 'border-indigo-600 bg-indigo-50/70 text-indigo-900 font-semibold'
                   : 'border-slate-200 hover:bg-slate-50 text-slate-700'
@@ -54,7 +54,7 @@
               type="button"
               @click="localSchemaKey = 'PROD_REQUISITION'"
               :class="[
-                'p-2.5 rounded-lg border text-left transition',
+                'p-2.5 rounded-lg border text-left transition cursor-pointer',
                 localSchemaKey === 'PROD_REQUISITION'
                   ? 'border-indigo-600 bg-indigo-50/70 text-indigo-900 font-semibold'
                   : 'border-slate-200 hover:bg-slate-50 text-slate-700'
@@ -104,14 +104,14 @@
         <button
           type="button"
           @click="$emit('close')"
-          class="px-3 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-medium transition"
+          class="px-3 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-medium transition cursor-pointer"
         >
           取消
         </button>
         <button
           type="button"
           @click="saveSchema"
-          class="px-4 py-1.5 rounded bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs transition"
+          class="px-4 py-1.5 rounded bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-xs font-semibold shadow-xs transition cursor-pointer"
         >
           应用配置
         </button>

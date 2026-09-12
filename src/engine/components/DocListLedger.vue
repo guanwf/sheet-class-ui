@@ -21,10 +21,10 @@
           :class="[
             'p-3.5 rounded-lg border shadow-2xs flex items-center justify-between transition select-none',
             card.filterStatus
-              ? 'cursor-pointer hover:border-indigo-400 hover:shadow-xs'
+              ? 'cursor-pointer hover:border-[#25548d]/60 hover:shadow-xs'
               : '',
             card.filterStatus && queryValues.status === card.filterStatus
-              ? 'ring-2 ring-indigo-500 bg-indigo-50/60 border-indigo-300'
+              ? 'ring-2 ring-[#25548d] bg-[#f0f5fa] border-[#cbdff2]'
               : 'bg-white border-slate-200'
           ]"
           :title="card.filterStatus ? `点击快速按 [${card.label}] 过滤单据` : undefined"
@@ -45,7 +45,7 @@
               </span>
               <span
                 v-if="card.filterStatus && queryValues.status === card.filterStatus"
-                class="text-[10px] px-1 py-0.2 rounded bg-indigo-600 text-white font-mono scale-90"
+                class="text-[10px] px-1 py-0.2 rounded bg-[#25548d] text-white font-mono scale-90"
               >
                 已过滤
               </span>
@@ -147,12 +147,12 @@
             </template>
 
             <!-- 查询与重置按钮 -->
-            <div class="flex items-center space-x-2 pl-1">
+            <div class="flex items-center space-x-1.5 pl-1">
               <button
                 type="button"
                 @click="executeQuery"
                 :disabled="isQuerying"
-                class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:bg-indigo-300 text-white rounded font-medium transition inline-flex items-center space-x-1 shadow-2xs cursor-pointer select-none"
+                class="px-3 py-1.5 bg-[#25548d] hover:bg-[#1e4676] active:bg-[#183860] disabled:opacity-50 text-white rounded font-medium transition inline-flex items-center space-x-1 shadow-2xs cursor-pointer select-none"
                 title="执行条件查询 (回车键也可触发)"
               >
                 <Search v-if="!isQuerying" class="w-3.5 h-3.5" />
@@ -191,7 +191,7 @@
             <button
               type="button"
               @click="exportCsv"
-              class="inline-flex items-center px-3 py-1.5 rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-medium text-xs transition shadow-2xs"
+              class="inline-flex items-center px-3 py-1.5 rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-medium text-xs transition"
             >
               <Download class="w-3.5 h-3.5 mr-1 text-slate-500" />
               导出台账 CSV
@@ -200,7 +200,7 @@
             <button
               type="button"
               @click="$emit('new-document')"
-              class="inline-flex items-center px-3.5 py-1.5 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs transition shadow-xs"
+              class="inline-flex items-center px-3.5 py-1.5 rounded-md bg-[#25548d] hover:bg-[#1e4676] active:bg-[#183860] text-white font-medium antialiased tracking-wide text-xs transition shadow-xs cursor-pointer select-none"
             >
               <Plus class="w-3.5 h-3.5 mr-1" />
               新增单据 (新标签页)
@@ -210,12 +210,12 @@
       </slot>
 
       <!-- 提示条 -->
-      <div class="px-4 py-1.5 bg-indigo-50/50 border-b border-indigo-100/60 text-[11px] text-indigo-700 flex items-center justify-between shrink-0">
+      <div class="px-4 py-1.5 bg-slate-50 border-b border-slate-200 text-[11px] text-slate-600 flex items-center justify-between shrink-0">
         <div class="flex items-center space-x-1.5">
-          <span class="erp-dot-sm erp-dot-indigo"></span>
+          <span class="erp-dot-sm erp-dot-primary"></span>
           <span>双击行或点击单据编号即可在<strong>新标签页 (TabPage)</strong> 中开启独立主从表编辑；列表支持分页浏览。</span>
         </div>
-        <span class="text-indigo-600 font-medium font-mono">
+        <span class="text-[#25548d] font-medium font-mono">
           过滤检索共 {{ filteredDocuments.length }} 条记录（当前第 {{ currentPage }} / {{ totalPages || 1 }} 页）
         </span>
       </div>

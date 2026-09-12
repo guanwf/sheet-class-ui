@@ -7,46 +7,52 @@
           <span>{{ title || '业务单据' }}</span>
           <span
             v-if="docNo || masterData?.docNo"
-            :class="['font-mono font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200', isCompact ? 'text-xs' : 'text-sm']"
+            :class="['font-mono font-semibold text-[#25548d] bg-[#f0f5fa] px-2 py-0.5 rounded border border-[#cbdff2]', isCompact ? 'text-xs' : 'text-sm']"
           >
             {{ docNo || masterData?.docNo }}
           </span>
         </h2>
 
-        <!-- 单据状态徽标 -->
-        <span
+        <!-- 单据状态徽标 (采用 Ant Design Vue 标签) -->
+        <a-tag
           v-if="currentStatus === 'approved'"
-          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300"
+          color="success"
+          class="m-0 inline-flex items-center text-xs px-2 py-0.5"
         >
-          <CheckCircle2 class="w-3.5 h-3.5 mr-1 text-emerald-600" />
+          <template #icon><CheckCircleOutlined /></template>
           已核准生效
-        </span>
-        <span
+        </a-tag>
+        <a-tag
           v-else-if="currentStatus === 'pending'"
-          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-300"
+          color="processing"
+          class="m-0 inline-flex items-center text-xs px-2 py-0.5"
         >
-          <Clock class="w-3.5 h-3.5 mr-1 text-blue-600 animate-spin" />
+          <template #icon><SyncOutlined spin /></template>
           待审核审批
-        </span>
-        <span
+        </a-tag>
+        <a-tag
           v-else-if="currentStatus === 'rejected'"
-          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-800 border border-rose-300"
+          color="error"
+          class="m-0 inline-flex items-center text-xs px-2 py-0.5"
         >
-          <AlertCircle class="w-3.5 h-3.5 mr-1 text-rose-600" />
+          <template #icon><CloseCircleOutlined /></template>
           审批已驳回
-        </span>
-        <span
+        </a-tag>
+        <a-tag
           v-else-if="currentStatus === 'voided'"
-          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-300"
+          color="default"
+          class="m-0 inline-flex items-center text-xs px-2 py-0.5"
         >
           已作废
-        </span>
-        <span
+        </a-tag>
+        <a-tag
           v-else
-          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300"
+          color="warning"
+          class="m-0 inline-flex items-center text-xs px-2 py-0.5"
         >
+          <template #icon><EditOutlined /></template>
           草稿待提交
-        </span>
+        </a-tag>
       </div>
 
       <div class="flex items-center space-x-3 text-slate-500 text-[11px]">
@@ -64,12 +70,10 @@
         <button
           type="button"
           @click="expanded = !expanded"
-          class="text-indigo-600 hover:text-indigo-800 font-medium ml-2 flex items-center space-x-1"
+          class="text-[#25548d] hover:text-[#183a62] font-medium ml-2 flex items-center space-x-1 cursor-pointer"
         >
           <span>{{ expanded ? '收起表头' : '展开表头' }}</span>
-          <ChevronDown
-            :class="['w-3.5 h-3.5 transition-transform duration-200', expanded ? 'rotate-180' : '']"
-          />
+          <DownOutlined :class="['w-3 h-3 text-[10px] transition-transform duration-200', expanded ? 'rotate-180' : '']" />
         </button>
       </div>
     </div>
@@ -116,83 +120,71 @@
                   :master="masterData"
                   :update-value="(val: any) => updateField(field.key, val)"
                 >
-                  <!-- 1. 文本输入 -->
-                  <input
+                  <!-- 1. 文本输入 (Ant Design Vue a-input) -->
+                  <a-input
                     v-if="field.type === 'text'"
-                    type="text"
                     :value="masterData[field.key]"
                     :disabled="readonly || field.disabled"
                     :placeholder="field.placeholder || `请输入${field.label}`"
-                    @input="updateField(field.key, ($event.target as HTMLInputElement).value)"
-                    :class="[
-                      'w-full bg-slate-50 border border-slate-300 rounded text-slate-800 text-xs focus:bg-white focus:border-indigo-500 focus:outline-none disabled:opacity-60',
-                      isCompact ? 'h-7 px-2 text-[11.5px]' : 'h-8 px-2.5'
-                    ]"
+                    :size="controlSize"
+                    allow-clear
+                    @update:value="(val: any) => updateField(field.key, val)"
                   />
 
-                  <!-- 2. 数字输入 -->
-                  <input
+                  <!-- 2. 数字输入 (Ant Design Vue a-input-number) -->
+                  <a-input-number
                     v-else-if="field.type === 'number'"
-                    type="number"
                     :value="masterData[field.key]"
                     :disabled="readonly || field.disabled"
                     :step="field.step || 1"
                     :min="field.min"
                     :max="field.max"
                     :placeholder="field.placeholder"
-                    @input="updateField(field.key, Number(($event.target as HTMLInputElement).value))"
-                    :class="[
-                      'w-full bg-slate-50 border border-slate-300 rounded text-slate-800 font-mono text-xs focus:bg-white focus:border-indigo-500 focus:outline-none disabled:opacity-60',
-                      isCompact ? 'h-7 px-2 text-[11.5px]' : 'h-8 px-2.5'
-                    ]"
+                    :size="controlSize"
+                    class="w-full"
+                    @update:value="(val: any) => updateField(field.key, val)"
                   />
 
-                  <!-- 3. 日期选择 -->
-                  <input
+                  <!-- 3. 日期选择 (Ant Design Vue a-date-picker) -->
+                  <a-date-picker
                     v-else-if="field.type === 'date'"
-                    type="date"
                     :value="masterData[field.key]"
+                    value-format="YYYY-MM-DD"
                     :disabled="readonly || field.disabled"
-                    @input="updateField(field.key, ($event.target as HTMLInputElement).value)"
-                    :class="[
-                      'w-full bg-slate-50 border border-slate-300 rounded text-slate-800 text-xs focus:bg-white focus:border-indigo-500 focus:outline-none disabled:opacity-60',
-                      isCompact ? 'h-7 px-2 text-[11.5px]' : 'h-8 px-2.5'
-                    ]"
+                    :size="controlSize"
+                    class="w-full"
+                    allow-clear
+                    placeholder="请选择日期"
+                    @change="(_: any, dateStr: string | string[]) => updateField(field.key, Array.isArray(dateStr) ? dateStr[0] : dateStr)"
                   />
 
-                  <!-- 4. 下拉选择 -->
-                  <select
+                  <!-- 4. 下拉选择 (Ant Design Vue a-select) -->
+                  <a-select
                     v-else-if="field.type === 'select'"
                     :value="masterData[field.key]"
+                    :options="field.options"
                     :disabled="readonly || field.disabled"
-                    @change="updateField(field.key, ($event.target as HTMLSelectElement).value)"
-                    :class="[
-                      'w-full bg-slate-50 border border-slate-300 rounded text-slate-800 text-xs focus:bg-white focus:border-indigo-500 focus:outline-none disabled:opacity-60',
-                      isCompact ? 'h-7 px-2 text-[11.5px]' : 'h-8 px-2'
-                    ]"
-                  >
-                    <option
-                      v-for="opt in field.options || []"
-                      :key="opt.value"
-                      :value="opt.value"
-                    >
-                      {{ opt.label }}
-                    </option>
-                  </select>
+                    :size="controlSize"
+                    class="w-full"
+                    allow-clear
+                    show-search
+                    :filter-option="(input: string, option: any) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())"
+                    placeholder="请选择"
+                    @change="(val: any) => updateField(field.key, val)"
+                  />
 
-                  <!-- 5. 文本域 -->
-                  <textarea
+                  <!-- 5. 文本域 (Ant Design Vue a-textarea) -->
+                  <a-textarea
                     v-else-if="field.type === 'textarea'"
                     :value="masterData[field.key]"
                     :disabled="readonly || field.disabled"
                     :placeholder="field.placeholder"
+                    :size="controlSize"
                     :rows="isCompact ? 1 : 2"
-                    @input="updateField(field.key, ($event.target as HTMLTextAreaElement).value)"
-                    :class="[
-                      'w-full bg-slate-50 border border-slate-300 rounded text-slate-800 text-xs focus:bg-white focus:border-indigo-500 focus:outline-none disabled:opacity-60 resize-y',
-                      isCompact ? 'p-1.5 min-h-[28px] text-[11.5px]' : 'p-2'
-                    ]"
-                  ></textarea>
+                    :auto-size="isCompact ? { minRows: 1, maxRows: 3 } : { minRows: 2, maxRows: 4 }"
+                    allow-clear
+                    @update:value="(val: any) => updateField(field.key, val)"
+                  />
 
                   <!-- 6. 查询精灵输入框 (SpiritInput) -->
                   <SpiritInput
@@ -210,16 +202,13 @@
                   />
 
                   <!-- 默认兜底 -->
-                  <input
+                  <a-input
                     v-else
-                    type="text"
                     :value="masterData[field.key]"
                     :disabled="readonly || field.disabled"
-                    @input="updateField(field.key, ($event.target as HTMLInputElement).value)"
-                    :class="[
-                      'w-full bg-slate-50 border border-slate-300 rounded text-slate-800 text-xs focus:bg-white focus:border-indigo-500 focus:outline-none disabled:opacity-60',
-                      isCompact ? 'h-7 px-2 text-[11.5px]' : 'h-8 px-2.5'
-                    ]"
+                    :size="controlSize"
+                    allow-clear
+                    @update:value="(val: any) => updateField(field.key, val)"
                   />
                 </slot>
               </div>
@@ -235,11 +224,12 @@
 import { ref, computed } from 'vue';
 import { useStore } from 'vuex';
 import {
-  CheckCircle2,
-  Clock,
-  AlertCircle,
-  ChevronDown,
-} from 'lucide-vue-next';
+  CheckCircleOutlined,
+  SyncOutlined,
+  CloseCircleOutlined,
+  EditOutlined,
+  DownOutlined,
+} from '@ant-design/icons-vue';
 import { FieldConfig } from '../types';
 import SpiritInput from '../spirit/SpiritInput.vue';
 
@@ -272,6 +262,8 @@ const isCompact = computed(() => {
   }
   return store?.getters?.uiDensity === 'compact';
 });
+
+const controlSize = computed<'small' | 'middle'>(() => (isCompact.value ? 'small' : 'middle'));
 
 const expanded = ref(props.defaultExpanded);
 

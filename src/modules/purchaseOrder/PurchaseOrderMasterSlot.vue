@@ -12,37 +12,40 @@
       <div class="grid grid-cols-2 gap-2">
         <div>
           <label class="block text-slate-500 text-[11px] font-medium mb-0.5">单据日期</label>
-          <input
-            type="date"
+          <a-date-picker
             :value="master.docDate"
+            value-format="YYYY-MM-DD"
             :disabled="readonly"
-            @input="updateField('docDate', ($event.target as HTMLInputElement).value)"
-            class="w-full h-7 px-2 bg-white border border-slate-300 rounded text-xs"
+            size="small"
+            class="w-full"
+            placeholder="请选择日期"
+            @change="(_: any, dateStr: string | string[]) => updateField('docDate', Array.isArray(dateStr) ? dateStr[0] : dateStr)"
           />
         </div>
         <div>
           <label class="block text-slate-500 text-[11px] font-medium mb-0.5">关联合同号</label>
-          <input
-            type="text"
+          <a-input
             :value="master.contractNo"
             :disabled="readonly"
+            size="small"
             placeholder="HT-2026-X"
-            @input="updateField('contractNo', ($event.target as HTMLInputElement).value)"
-            class="w-full h-7 px-2 bg-white border border-slate-300 rounded text-xs"
+            allow-clear
+            @update:value="(val: any) => updateField('contractNo', val)"
           />
         </div>
         <div class="col-span-2">
           <label class="block text-slate-500 text-[11px] font-medium mb-0.5">供应商</label>
-          <select
+          <a-select
             :value="master.partnerId"
+            :options="supplierOptions"
             :disabled="readonly"
-            @change="updateField('partnerId', ($event.target as HTMLSelectElement).value)"
-            class="w-full h-7 px-2 bg-white border border-slate-300 rounded text-xs font-medium"
-          >
-            <option v-for="sup in suppliers" :key="sup.id" :value="sup.id">
-              [{{ sup.code }}] {{ sup.name }}
-            </option>
-          </select>
+            size="small"
+            class="w-full"
+            show-search
+            :filter-option="(input: string, option: any) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())"
+            placeholder="请选择供应商"
+            @change="(val: any) => updateField('partnerId', val)"
+          />
         </div>
       </div>
     </div>
@@ -58,39 +61,42 @@
       <div class="grid grid-cols-2 gap-2">
         <div>
           <label class="block text-slate-500 text-[11px] font-medium mb-0.5">采购部门</label>
-          <input
-            type="text"
+          <a-input
             :value="master.department"
             disabled
-            class="w-full h-7 px-2 bg-slate-100 border border-slate-300 rounded text-xs text-slate-600"
+            size="small"
+            class="w-full text-slate-600"
           />
         </div>
         <div>
           <label class="block text-slate-500 text-[11px] font-medium mb-0.5">采购员</label>
-          <input
-            type="text"
+          <a-input
             :value="master.buyer"
             disabled
-            class="w-full h-7 px-2 bg-slate-100 border border-slate-300 rounded text-xs text-slate-600"
+            size="small"
+            class="w-full text-slate-600"
           />
         </div>
         <div>
           <label class="block text-slate-500 text-[11px] font-medium mb-0.5">结算币种</label>
-          <input
-            type="text"
+          <a-input
             :value="master.currency"
             disabled
-            class="w-full h-7 px-2 bg-slate-100 border border-slate-300 rounded text-xs text-slate-600 font-mono font-bold"
+            size="small"
+            class="w-full text-slate-600 font-mono font-bold"
           />
         </div>
         <div>
           <label class="block text-slate-500 text-[11px] font-medium mb-0.5">默认税率 (%)</label>
-          <input
-            type="number"
+          <a-input-number
             :value="master.taxRateDefault"
             :disabled="readonly"
-            @input="updateField('taxRateDefault', Number(($event.target as HTMLInputElement).value))"
-            class="w-full h-7 px-2 bg-white border border-slate-300 rounded text-xs font-mono"
+            :step="1"
+            :min="0"
+            :max="100"
+            size="small"
+            class="w-full font-mono"
+            @update:value="(val: any) => updateField('taxRateDefault', val)"
           />
         </div>
       </div>
@@ -106,23 +112,23 @@
       </div>
       <div>
         <label class="block text-slate-500 text-[11px] font-medium mb-0.5">收货仓库与交货地址</label>
-        <input
-          type="text"
+        <a-input
           :value="master.deliveryAddress"
           :disabled="readonly"
-          @input="updateField('deliveryAddress', ($event.target as HTMLInputElement).value)"
-          class="w-full h-7 px-2 bg-white border border-slate-300 rounded text-xs"
+          size="small"
+          allow-clear
+          @update:value="(val: any) => updateField('deliveryAddress', val)"
         />
       </div>
       <div>
         <label class="block text-slate-500 text-[11px] font-medium mb-0.5">特约说明</label>
-        <input
-          type="text"
+        <a-input
           :value="master.remarks"
           :disabled="readonly"
+          size="small"
           placeholder="备忘条款说明..."
-          @input="updateField('remarks', ($event.target as HTMLInputElement).value)"
-          class="w-full h-7 px-2 bg-white border border-slate-300 rounded text-xs"
+          allow-clear
+          @update:value="(val: any) => updateField('remarks', val)"
         />
       </div>
     </div>
@@ -130,6 +136,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { MasterHeader } from '../../types/document';
 import { SUPPLIERS } from '../../data/initialTemplates';
 
@@ -140,4 +147,10 @@ defineProps<{
 }>();
 
 const suppliers = SUPPLIERS;
+const supplierOptions = computed(() =>
+  suppliers.map((s) => ({
+    value: s.id,
+    label: `[${s.code}] ${s.name}`,
+  }))
+);
 </script>

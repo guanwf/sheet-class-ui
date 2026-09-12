@@ -1,18 +1,17 @@
 <template>
   <div class="h-12 bg-white border-b border-slate-200 px-3.5 flex items-center justify-between text-xs shrink-0 select-none">
     <!-- 左侧动作按钮组 (配置化驱动) -->
-    <div class="flex items-center space-x-1.5 overflow-x-auto scrollbar-none py-1">
+    <div class="flex items-center gap-2 overflow-x-auto scrollbar-none py-1">
       <slot name="toolbar-left" :context="actionContext" />
 
-      <template v-for="btn in computedActions" :key="btn.code">
+      <template v-for="btn in visibleActions" :key="btn.code">
         <!-- 支持插槽自定义替换特定按钮 -->
         <slot :name="`action-${btn.code}`" :action="btn" :context="actionContext" :trigger="() => handleTrigger(btn)">
           <button
-            v-if="btn.isVisible"
             type="button"
             :disabled="btn.isDisabled"
             :class="[
-              'inline-flex items-center px-3 py-1.5 rounded font-medium transition shadow-2xs text-xs',
+              'inline-flex items-center px-3 py-1.5 rounded-md font-medium antialiased tracking-wide transition shadow-2xs text-xs cursor-pointer select-none shrink-0',
               getButtonVariantClass(btn.variant, btn.isDisabled)
             ]"
             :title="btn.title || `${btn.label} ${btn.shortcut ? `(${btn.shortcut})` : ''}`"
@@ -32,7 +31,7 @@
     </div>
 
     <!-- 右侧扩展区域 -->
-    <div class="flex items-center space-x-2 shrink-0 pl-2">
+    <div class="flex items-center gap-2 shrink-0 pl-2">
       <slot name="toolbar-right" :context="actionContext" />
     </div>
   </div>
@@ -41,18 +40,17 @@
 <script setup lang="ts">
 import { computed, onMounted, onBeforeUnmount } from 'vue';
 import {
-  Save,
-  Send,
-  CheckCircle2,
-  AlertCircle,
-  Copy,
-  Printer,
-  Trash2,
-  FileCode2,
-  Sliders,
-  Play,
-  RotateCcw,
-} from 'lucide-vue-next';
+  SaveOutlined,
+  SendOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  CopyOutlined,
+  PrinterOutlined,
+  DeleteOutlined,
+  FileTextOutlined,
+  ReloadOutlined,
+  AppstoreOutlined,
+} from '@ant-design/icons-vue';
 import { DocActionItem, DocActionContext, ActionVariant } from '../types';
 
 const props = withDefaults(
@@ -106,34 +104,39 @@ const computedActions = computed(() => {
   });
 });
 
+// 仅获取当前状态下可见的动作，避免产生不可见的虚拟 DOM 占位干扰排版
+const visibleActions = computed(() => {
+  return computedActions.value.filter((btn) => btn.isVisible);
+});
+
 // 图标匹配
 function resolveIcon(iconNameOrCode: string) {
   switch (iconNameOrCode?.toLowerCase()) {
     case 'save':
-      return Save;
+      return SaveOutlined;
     case 'send':
     case 'submit':
-      return Send;
+      return SendOutlined;
     case 'approve':
     case 'check':
-      return CheckCircle2;
+      return CheckCircleOutlined;
     case 'reject':
-      return AlertCircle;
+      return CloseCircleOutlined;
     case 'copy':
     case 'duplicate':
-      return Copy;
+      return CopyOutlined;
     case 'print':
-      return Printer;
+      return PrinterOutlined;
     case 'delete':
     case 'trash':
-      return Trash2;
+      return DeleteOutlined;
     case 'payload':
     case 'code':
-      return FileCode2;
+      return FileTextOutlined;
     case 'reset':
-      return RotateCcw;
+      return ReloadOutlined;
     default:
-      return Sliders;
+      return AppstoreOutlined;
   }
 }
 
@@ -144,7 +147,7 @@ function getButtonVariantClass(variant?: ActionVariant, isDisabled?: boolean) {
   }
   switch (variant) {
     case 'primary':
-      return 'bg-indigo-600 hover:bg-indigo-700 text-white';
+      return 'bg-[#25548d] hover:bg-[#1e4676] active:bg-[#183860] text-white border border-[#1e4676]/40';
     case 'success':
       return 'bg-emerald-600 hover:bg-emerald-700 text-white';
     case 'danger':

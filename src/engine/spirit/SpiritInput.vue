@@ -10,7 +10,8 @@
       :placeholder="placeholder || `点击右侧查询图标打开${currentConfig?.title || '精灵'}...`"
       @keydown.enter.prevent="onEnterQuickSearch"
       :class="[
-        'w-full h-8 pl-2.5 pr-14 border rounded text-xs transition truncate select-text',
+        'w-full border rounded transition truncate select-text',
+        isCompact ? 'h-7 pl-2 pr-12 text-[11.5px]' : 'h-8 pl-2.5 pr-14 text-xs',
         disabled
           ? 'bg-slate-100 border-slate-300 text-slate-500 cursor-not-allowed'
           : 'bg-white border-slate-300 text-slate-800 hover:border-indigo-400 focus:border-indigo-600 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none cursor-default',
@@ -25,10 +26,13 @@
         v-if="allowClear && !disabled && (internalCode || internalName || modelValue || displayValue)"
         type="button"
         @click.stop="onClear"
-        class="w-5 h-5 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-slate-100 rounded transition cursor-pointer"
+        :class="[
+          'flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-slate-100 rounded transition cursor-pointer',
+          isCompact ? 'w-4 h-4' : 'w-5 h-5'
+        ]"
         title="清空当前选择"
       >
-        <X class="w-3.5 h-3.5" />
+        <X :class="isCompact ? 'w-3 h-3' : 'w-3.5 h-3.5'" />
       </button>
 
       <!-- 核心：小查询图标按钮 (点击此图标弹出查询精灵，已按需求去除文字) -->
@@ -36,10 +40,13 @@
         type="button"
         :disabled="disabled"
         @click.stop="openModal"
-        class="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 active:bg-indigo-100 border border-slate-200 hover:border-indigo-300 rounded transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-2xs"
+        :class="[
+          'flex items-center justify-center text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 active:bg-indigo-100 border border-slate-200 hover:border-indigo-300 rounded transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-2xs',
+          isCompact ? 'w-5 h-5' : 'w-6 h-6'
+        ]"
         :title="`查询${currentConfig?.title || '精灵'}`"
       >
-        <Search class="w-3.5 h-3.5" />
+        <Search :class="isCompact ? 'w-3 h-3' : 'w-3.5 h-3.5'" />
       </button>
     </div>
 
@@ -56,6 +63,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+import { useStore } from 'vuex';
 import { Search, X } from 'lucide-vue-next';
 import SpiritModal from './SpiritModal.vue';
 import { spiritRegistry } from './spiritRegistry';
@@ -72,6 +80,7 @@ const props = withDefaults(
     disabled?: boolean;
     readonlyInput?: boolean;
     allowClear?: boolean;
+    compact?: boolean;
     mapping?: SpiritFieldMapping;
   }>(),
   {
@@ -83,6 +92,12 @@ const props = withDefaults(
     allowClear: true,
   }
 );
+
+const store = useStore();
+const isCompact = computed(() => {
+  if (props.compact !== undefined) return props.compact;
+  return store?.getters?.uiDensity === 'compact';
+});
 
 const emit = defineEmits<{
   (e: 'update:modelValue', val: any): void;

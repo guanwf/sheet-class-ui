@@ -1,5 +1,5 @@
 <template>
-  <div class="h-screen w-screen flex flex-col bg-slate-900 overflow-hidden font-sans select-none">
+  <div :class="['h-screen w-screen flex flex-col bg-slate-900 overflow-hidden font-sans select-none', uiDensity === 'compact' ? 'erp-density-compact' : 'erp-density-standard']">
     <!-- 1. 全局系统顶栏 -->
     <header class="h-10 bg-slate-900 border-b border-slate-800 text-white px-3 flex items-center justify-between text-xs shrink-0">
       <div class="flex items-center space-x-3">
@@ -24,6 +24,37 @@
 
       <!-- 右侧操作与用户信息 -->
       <div class="flex items-center space-x-3 text-slate-400 text-[11px]">
+        <!-- 密度切换开关 -->
+        <div class="flex items-center bg-slate-800 p-0.5 rounded-md border border-slate-700">
+          <span class="text-[10px] text-slate-400 px-1.5 font-medium">显示密度:</span>
+          <button
+            type="button"
+            @click="setDensity('compact')"
+            :class="[
+              'px-2 py-0.5 rounded text-[11px] font-medium transition flex items-center space-x-1',
+              uiDensity === 'compact'
+                ? 'bg-indigo-600 text-white shadow-2xs font-semibold'
+                : 'text-slate-400 hover:text-slate-200'
+            ]"
+            title="紧凑模式：主表栅格横向紧凑、网格行高 30px、一屏可见更多行明细"
+          >
+            <span>紧凑</span>
+          </button>
+          <button
+            type="button"
+            @click="setDensity('standard')"
+            :class="[
+              'px-2 py-0.5 rounded text-[11px] font-medium transition flex items-center space-x-1',
+              uiDensity === 'standard'
+                ? 'bg-indigo-600 text-white shadow-2xs font-semibold'
+                : 'text-slate-400 hover:text-slate-200'
+            ]"
+            title="标准模式：舒适排版与间距"
+          >
+            <span>标准</span>
+          </button>
+        </div>
+
         <div class="flex items-center space-x-1 bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700/50">
           <span class="text-slate-400">总业务单据:</span>
           <strong class="text-indigo-300 font-mono font-bold">{{ totalDocCount }}</strong>
@@ -109,6 +140,12 @@ const store = useStore<State>();
 const activeModuleId = computed<ModuleKey>(() => store.getters.activeModuleId);
 const outerModules = computed(() => store.getters.outerModules);
 const totalDocCount = computed(() => store.getters.documents.length);
+const uiDensity = computed<'compact' | 'standard'>(() => store.getters.uiDensity);
+
+const setDensity = (density: 'compact' | 'standard') => {
+  store.commit('SET_UI_DENSITY', density);
+  showToast(`已切换至${density === 'compact' ? '紧凑高密模式' : '标准舒适模式'}`);
+};
 
 const toastMsg = ref<string | null>(null);
 const printTargetDoc = ref<DocumentRecord | null>(null);

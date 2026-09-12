@@ -31,7 +31,7 @@ export const returnOrderModuleConfig: DocModuleConfig = {
   actions: [
     {
       code: 'save',
-      label: '保存退货单',
+      label: '保存',
       icon: 'save',
       variant: 'primary',
       shortcut: 'Ctrl+S',
@@ -39,7 +39,7 @@ export const returnOrderModuleConfig: DocModuleConfig = {
     },
     {
       code: 'submit',
-      label: '提交送审',
+      label: '审核',
       icon: 'send',
       variant: 'primary',
       visible: ({ status }) => status === 'draft' || status === 'rejected',
@@ -73,7 +73,7 @@ export const returnOrderModuleConfig: DocModuleConfig = {
     },
     {
       code: 'print',
-      label: '凭证套打',
+      label: '打印',
       icon: 'print',
       variant: 'secondary',
     },

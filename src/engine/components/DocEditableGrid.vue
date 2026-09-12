@@ -11,17 +11,17 @@
       :on-paste="() => (showPasteModal = true)"
       :on-export="exportCsv"
     >
-      <div class="p-2 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs select-none shrink-0">
+      <div :class="['bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs select-none shrink-0 transition-all', isCompact ? 'px-2 py-1' : 'p-2']">
         <!-- 左侧快捷动作组 -->
         <div class="flex items-center space-x-1.5 flex-wrap">
           <button
             v-if="!readonly && config.allowAdd !== false"
             type="button"
             @click="onAddRow()"
-            class="inline-flex items-center px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition shadow-2xs"
+            :class="['inline-flex items-center rounded bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition shadow-2xs', isCompact ? 'px-2 py-0.5 text-[11.5px]' : 'px-2.5 py-1']"
             title="追加一行空白记录"
           >
-            <Plus class="w-3.5 h-3.5 mr-1" />
+            <Plus :class="isCompact ? 'w-3 h-3 mr-0.5' : 'w-3.5 h-3.5 mr-1'" />
             新增行
           </button>
 
@@ -30,10 +30,10 @@
             type="button"
             :disabled="selectedRows.length === 0"
             @click="onDuplicateSelected"
-            class="inline-flex items-center px-2.5 py-1 rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition"
+            :class="['inline-flex items-center rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition', isCompact ? 'px-2 py-0.5 text-[11.5px]' : 'px-2.5 py-1']"
             title="复制选中行并在下方插入副本"
           >
-            <Copy class="w-3.5 h-3.5 mr-1 text-slate-400" />
+            <Copy :class="isCompact ? 'w-3 h-3 mr-0.5 text-slate-400' : 'w-3.5 h-3.5 mr-1 text-slate-400'" />
             复制行
           </button>
 
@@ -42,10 +42,10 @@
             type="button"
             :disabled="selectedRows.length === 0"
             @click="onDeleteSelected"
-            class="inline-flex items-center px-2.5 py-1 rounded border border-rose-200 bg-rose-50/70 hover:bg-rose-100 text-rose-700 disabled:opacity-40 disabled:cursor-not-allowed transition"
+            :class="['inline-flex items-center rounded border border-rose-200 bg-rose-50/70 hover:bg-rose-100 text-rose-700 disabled:opacity-40 disabled:cursor-not-allowed transition', isCompact ? 'px-2 py-0.5 text-[11.5px]' : 'px-2.5 py-1']"
             title="移除选中行记录"
           >
-            <Trash2 class="w-3.5 h-3.5 mr-1 text-rose-500" />
+            <Trash2 :class="isCompact ? 'w-3 h-3 mr-0.5 text-rose-500' : 'w-3.5 h-3.5 mr-1 text-rose-500'" />
             删除 ({{ selectedRows.length }})
           </button>
 
@@ -53,10 +53,10 @@
             v-if="!readonly && config.allowPaste !== false"
             type="button"
             @click="showPasteModal = true"
-            class="inline-flex items-center px-2.5 py-1 rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 transition"
+            :class="['inline-flex items-center rounded border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 transition', isCompact ? 'px-2 py-0.5 text-[11.5px]' : 'px-2.5 py-1']"
             title="从 Excel 复制多行并一键解析填充"
           >
-            <FileSpreadsheet class="w-3.5 h-3.5 mr-1 text-emerald-600" />
+            <FileSpreadsheet :class="isCompact ? 'w-3 h-3 mr-0.5 text-emerald-600' : 'w-3.5 h-3.5 mr-1 text-emerald-600'" />
             Excel 快速粘贴
           </button>
 
@@ -92,7 +92,10 @@
               type="text"
               v-model="quickSearchQuery"
               placeholder="搜索当前明细..."
-              class="h-7 pl-7 pr-6 bg-white border border-slate-300 rounded text-xs text-slate-800 placeholder-slate-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200 focus:outline-none w-32 sm:w-44 transition-all focus:w-52 shadow-2xs"
+              :class="[
+                'pl-7 pr-6 bg-white border border-slate-300 rounded text-slate-800 placeholder-slate-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200 focus:outline-none w-32 sm:w-44 transition-all focus:w-52 shadow-2xs',
+                isCompact ? 'h-6 text-[11px]' : 'h-7 text-xs'
+              ]"
             />
             <button
               v-if="quickSearchQuery"
@@ -244,6 +247,7 @@
         show-overflow
         show-footer
         class="text-xs w-full h-full"
+        :size="tableSize"
         :data="displayTableData"
         :row-config="{ isHover: true, isCurrent: true, keyField: 'id' }"
         :edit-config="readonly ? undefined : { trigger: 'click', mode: 'cell', showStatus: true }"
@@ -267,13 +271,13 @@
         @filter-change="onFilterChange"
       >
         <!-- 复选列 -->
-        <vxe-column type="checkbox" width="45" align="center" fixed="left" />
+        <vxe-column type="checkbox" :width="isCompact ? 38 : 45" align="center" fixed="left" />
 
         <!-- 序号列 -->
-        <vxe-column type="seq" width="55" title="序号" align="center" fixed="left" />
+        <vxe-column type="seq" :width="isCompact ? 46 : 55" title="序号" align="center" fixed="left" />
 
         <!-- 差异状态标识列 (展示 I/U/D/N 图标状态，方便直观校验) -->
-        <vxe-column title="变动" width="50" align="center" fixed="left">
+        <vxe-column title="变动" :width="isCompact ? 42 : 50" align="center" fixed="left">
           <template #default="{ row }">
             <span
               v-if="insertedIdSet.has(row.id)"
@@ -461,6 +465,7 @@
 
 <script setup lang="ts">
 import { ref, computed, toRaw, watch, onMounted } from 'vue';
+import { useStore } from 'vuex';
 import { VxeTableInstance, VxeTableDefines } from 'vxe-table';
 import {
   Plus,
@@ -488,6 +493,7 @@ const props = withDefaults(
     showStressTest?: boolean;
     enableFilter?: boolean;
     enableSort?: boolean;
+    density?: 'compact' | 'standard';
     config?: {
       allowAdd?: boolean;
       allowDelete?: boolean;
@@ -524,6 +530,13 @@ const emit = defineEmits<{
   (e: 'validate-error', payload: { row: any; field: string; message: string }): void;
   (e: 'spirit-select', payload: { row: any; column: SlaveColumnConfig; selected: any; allSelected?: any[]; rowIndex?: number }): void;
 }>();
+
+const store = useStore();
+const isCompact = computed(() => {
+  if (props.density) return props.density === 'compact';
+  return store?.getters?.uiDensity === 'compact';
+});
+const tableSize = computed(() => isCompact.value ? 'mini' : 'medium');
 
 const xTableRef = ref<VxeTableInstance | null>(null);
 const selectedRows = ref<any[]>([]);

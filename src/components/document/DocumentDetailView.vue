@@ -86,6 +86,38 @@
 
       <!-- 右侧：代码指南速查与报文查看 -->
       <div class="flex items-center space-x-2">
+        <!-- 紧凑 / 标准 密度切换按钮 -->
+        <div class="flex items-center bg-slate-800 p-0.5 rounded border border-slate-700">
+          <button
+            type="button"
+            @click="setDensity('compact')"
+            :class="[
+              'px-2 py-0.5 rounded text-[11px] font-medium transition flex items-center space-x-1',
+              uiDensity === 'compact'
+                ? 'bg-indigo-600 text-white shadow-2xs font-semibold'
+                : 'text-slate-400 hover:text-slate-200'
+            ]"
+            title="紧凑模式：主表横向行内排布、单元格行高 30px、一屏可看更多行明细"
+          >
+            <Shrink class="w-3 h-3 mr-0.5" />
+            <span>紧凑</span>
+          </button>
+          <button
+            type="button"
+            @click="setDensity('standard')"
+            :class="[
+              'px-2 py-0.5 rounded text-[11px] font-medium transition flex items-center space-x-1',
+              uiDensity === 'standard'
+                ? 'bg-indigo-600 text-white shadow-2xs font-semibold'
+                : 'text-slate-400 hover:text-slate-200'
+            ]"
+            title="标准模式：舒适排版与间距"
+          >
+            <Expand class="w-3 h-3 mr-0.5" />
+            <span>标准</span>
+          </button>
+        </div>
+
         <button
           type="button"
           @click="showGuideModal = true"
@@ -436,6 +468,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+import { useStore } from 'vuex';
 import {
   FileCode2,
   AlertCircle,
@@ -447,6 +480,8 @@ import {
   Columns3,
   BookOpen,
   FileText,
+  Shrink,
+  Expand,
 } from 'lucide-vue-next';
 import {
   DocumentRecord,
@@ -517,6 +552,15 @@ const activeSlaveColumns = computed<SlaveColumnConfig[]>(() => activeModule.valu
 // 3 种页面布局模式：'config' (配置驱动) | 'slot' (插槽定制) | 'recomposed' (左右分栏)
 const layoutMode = ref<'config' | 'slot' | 'recomposed'>('config');
 const showGuideModal = ref(false);
+
+const store = useStore();
+const uiDensity = computed<'compact' | 'standard'>(() => store?.getters?.uiDensity || 'compact');
+const setDensity = (density: 'compact' | 'standard') => {
+  if (store) {
+    store.commit('SET_UI_DENSITY', density);
+    showToast(`已切换至${density === 'compact' ? '紧凑高密模式' : '标准舒适模式'}`, 'info');
+  }
+};
 
 // 方式一专用：响应式维护当前字段配置列表（用于交互演示动态改变 span 后的栅格自动重排）
 const dynamicMasterFields = ref<MasterFieldConfig[]>([]);

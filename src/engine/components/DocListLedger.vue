@@ -107,6 +107,7 @@
                   v-model="queryValues[field.field]"
                   type="text"
                   :placeholder="field.placeholder || `请输入${field.label}...`"
+                  @keydown.enter="executeQuery"
                   class="w-full h-8 pl-8 pr-3 bg-white border border-slate-300 rounded text-xs focus:border-indigo-500 focus:outline-none"
                 />
               </div>
@@ -145,19 +146,34 @@
               </div>
             </template>
 
-            <!-- 重置按钮 -->
-            <button
-              v-if="hasActiveFilter"
-              type="button"
-              @click="resetFilters"
-              class="px-2.5 py-1 text-slate-500 hover:text-slate-800 hover:bg-slate-200/70 rounded transition inline-flex items-center space-x-1"
-            >
-              <RotateCcw class="w-3 h-3 text-slate-400" />
-              <span>重置过滤</span>
-            </button>
+            <!-- 查询与重置按钮 -->
+            <div class="flex items-center space-x-2 pl-1">
+              <button
+                type="button"
+                @click="executeQuery"
+                :disabled="isQuerying"
+                class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:bg-indigo-300 text-white rounded font-medium transition inline-flex items-center space-x-1 shadow-2xs cursor-pointer select-none"
+                title="执行条件查询 (回车键也可触发)"
+              >
+                <Search v-if="!isQuerying" class="w-3.5 h-3.5" />
+                <RotateCcw v-else class="w-3.5 h-3.5 animate-spin" />
+                <span>{{ isQuerying ? '查询中...' : '查询' }}</span>
+              </button>
+
+              <button
+                type="button"
+                @click="resetFilters"
+                :disabled="isQuerying"
+                class="px-2.5 py-1.5 text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-300 rounded font-medium transition inline-flex items-center space-x-1 cursor-pointer select-none"
+                title="清空并重置所有过滤条件"
+              >
+                <RotateCcw class="w-3.5 h-3.5 text-slate-400" />
+                <span>重置</span>
+              </button>
+            </div>
 
             <!-- 业务模块自定义额外过滤项插槽 -->
-            <slot name="filter-extra" :query="queryValues" />
+            <slot name="filter-extra" :query="queryValues" :execute="executeQuery" />
           </div>
 
           <!-- 右侧动作按钮组 -->
@@ -214,6 +230,7 @@
           round
           show-overflow
           class="text-xs"
+          :size="tableSize"
           :data="pagedDocuments"
           :row-config="{ isHover: true, isCurrent: true, keyField: 'id' }"
           :checkbox-config="{ trigger: 'row', highlight: true }"
@@ -389,6 +406,15 @@
             />
           </template>
         </vxe-table>
+
+        <!-- 查询中遮罩层与加载动画 -->
+        <div
+          v-if="isQuerying"
+          class="absolute inset-0 bg-white/70 backdrop-blur-[1px] z-20 flex flex-col items-center justify-center space-y-2 text-indigo-700"
+        >
+          <RotateCcw class="w-6 h-6 animate-spin text-indigo-600" />
+          <span class="text-xs font-medium tracking-wide">正在请求并检索数据...</span>
+        </div>
       </div>
 
       <!-- 单据列表的分页工具栏 -->
@@ -460,6 +486,7 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, watch, toRaw } from 'vue';
+import { useStore } from 'vuex';
 import { VxeTableInstance } from 'vxe-table';
 import {
   Search,
@@ -500,6 +527,10 @@ const emit = defineEmits<{
   (e: 'batch-approve', docIds: string[]): void;
 }>();
 
+const store = useStore();
+const isCompact = computed(() => store?.getters?.uiDensity === 'compact');
+const tableSize = computed(() => isCompact.value ? 'mini' : 'medium');
+
 const tableRef = ref<VxeTableInstance | null>(null);
 const selectedRows = ref<any[]>([]);
 
@@ -507,24 +538,54 @@ const selectedRows = ref<any[]>([]);
 const currentPage = ref(1);
 const pageSize = ref(10);
 
-// 查询过滤状态响应式对象
+// 查询过滤输入框状态响应式对象 (待点击查询生效)
 const queryValues = reactive<Record<string, any>>({
   keyword: '',
   status: 'ALL',
   docType: 'ALL',
 });
 
+// 已生效的查询过滤状态响应式对象 (仅在点击查询或重置时同步)
+const activeQueryValues = reactive<Record<string, any>>({
+  keyword: '',
+  status: 'ALL',
+  docType: 'ALL',
+});
+
+// 是否处于 API/过滤查询响应中
+const isQuerying = ref(false);
+
 // 初始化/监听查询字段默认值
 function initQueryValues() {
   if (props.listConfig?.searchFields) {
     props.listConfig.searchFields.forEach((f) => {
+      const defaultVal = f.defaultValue !== undefined ? f.defaultValue : (f.type === 'select' ? 'ALL' : '');
       if (queryValues[f.field] === undefined) {
-        queryValues[f.field] = f.defaultValue !== undefined ? f.defaultValue : (f.type === 'select' ? 'ALL' : '');
+        queryValues[f.field] = defaultVal;
+      }
+      if (activeQueryValues[f.field] === undefined) {
+        activeQueryValues[f.field] = defaultVal;
       }
     });
   }
 }
 initQueryValues();
+
+// 执行查询（支持模拟或真实异步 API 交互）
+async function executeQuery() {
+  isQuerying.value = true;
+  try {
+    // 同步输入条件至生效查询条件
+    Object.keys(queryValues).forEach((key) => {
+      activeQueryValues[key] = queryValues[key];
+    });
+    // 如有需要也可短延迟模拟服务端/API交互平滑感
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    currentPage.value = 1;
+  } finally {
+    isQuerying.value = false;
+  }
+}
 
 watch(
   () => props.listConfig,
@@ -667,28 +728,39 @@ function getCardIcon(name?: string) {
   }
 }
 
-// 点击卡片联动快捷筛选状态
+// 点击卡片联动快捷筛选状态 (同时立即执行过滤)
 function onCardClick(card: DocListStatsCardConfig) {
   if (!card.filterStatus) return;
   if (queryValues.status === card.filterStatus) {
     queryValues.status = 'ALL';
+    activeQueryValues.status = 'ALL';
   } else {
     queryValues.status = card.filterStatus;
+    activeQueryValues.status = card.filterStatus;
   }
+  currentPage.value = 1;
 }
 
-// 供自定义状态栏组件调用的快捷状态筛选方法
+// 供自定义状态栏组件调用的快捷状态筛选方法 (同时立即执行过滤)
 function onQuickFilterStatus(status: string) {
   if (queryValues.status === status) {
     queryValues.status = 'ALL';
+    activeQueryValues.status = 'ALL';
   } else {
     queryValues.status = status;
+    activeQueryValues.status = status;
   }
+  currentPage.value = 1;
 }
 
-// 是否有处于激活状态的查询过滤条件
+// 是否有处于激活状态的查询过滤条件（检查生效条件或当前输入条件）
 const hasActiveFilter = computed(() => {
   for (const [key, val] of Object.entries(queryValues)) {
+    if (val !== undefined && val !== null && val !== '' && val !== 'ALL') {
+      return true;
+    }
+  }
+  for (const [key, val] of Object.entries(activeQueryValues)) {
     if (val !== undefined && val !== null && val !== '' && val !== 'ALL') {
       return true;
     }
@@ -696,14 +768,21 @@ const hasActiveFilter = computed(() => {
   return false;
 });
 
-// 重置过滤
+// 重置过滤：清空输入框与已生效查询条件，并执行刷新
 function resetFilters() {
   activeSearchFields.value.forEach((f) => {
-    queryValues[f.field] = f.defaultValue !== undefined ? f.defaultValue : (f.type === 'select' ? 'ALL' : '');
+    const defaultVal = f.defaultValue !== undefined ? f.defaultValue : (f.type === 'select' ? 'ALL' : '');
+    queryValues[f.field] = defaultVal;
+    activeQueryValues[f.field] = defaultVal;
   });
   queryValues.keyword = '';
   queryValues.status = 'ALL';
   queryValues.docType = 'ALL';
+
+  activeQueryValues.keyword = '';
+  activeQueryValues.status = 'ALL';
+  activeQueryValues.docType = 'ALL';
+
   currentPage.value = 1;
 }
 
@@ -753,17 +832,17 @@ const computedStats = computed(() => {
   };
 });
 
-// 多条件过滤后的列表
+// 多条件过滤后的列表 (严格基于用户点击【查询】后生效的 activeQueryValues 进行筛选)
 const filteredDocuments = computed(() => {
-  const kw = (queryValues.keyword || '').trim().toLowerCase();
+  const kw = (activeQueryValues.keyword || '').trim().toLowerCase();
 
   return flatDocuments.value.filter((doc) => {
     // 1. 通用状态过滤
-    if (queryValues.status && queryValues.status !== 'ALL' && doc.status !== queryValues.status) {
+    if (activeQueryValues.status && activeQueryValues.status !== 'ALL' && doc.status !== activeQueryValues.status) {
       return false;
     }
     // 2. 单据类型过滤
-    if (queryValues.docType && queryValues.docType !== 'ALL' && doc.docType !== queryValues.docType) {
+    if (activeQueryValues.docType && activeQueryValues.docType !== 'ALL' && doc.docType !== activeQueryValues.docType) {
       return false;
     }
 
@@ -772,7 +851,7 @@ const filteredDocuments = computed(() => {
       const fieldKey = field.field;
       if (fieldKey === 'keyword' || fieldKey === 'status' || fieldKey === 'docType') continue;
 
-      const qVal = queryValues[fieldKey];
+      const qVal = activeQueryValues[fieldKey];
       if (qVal !== undefined && qVal !== null && qVal !== '' && qVal !== 'ALL') {
         const rowVal = doc[fieldKey];
         if (String(rowVal) !== String(qVal)) {
@@ -812,9 +891,9 @@ const pagedDocuments = computed(() => {
   return filteredDocuments.value.slice(start, start + pageSize.value);
 });
 
-// 过滤变动时自动跳回第 1 页
+// 生效过滤或分页大小变动时自动跳回第 1 页
 watch(
-  () => [queryValues, pageSize.value],
+  () => [activeQueryValues, pageSize.value],
   () => {
     currentPage.value = 1;
   },

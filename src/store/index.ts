@@ -33,6 +33,7 @@ export interface State {
   moduleSessions: Record<ModuleKey, ModuleSessionState>;
   dirtyMap: Record<string, boolean>;
   currentSchema: DocumentSchemaConfig;
+  uiDensity: 'compact' | 'standard';
 }
 
 export const store = createStore<State>({
@@ -83,9 +84,11 @@ export const store = createStore<State>({
     },
     dirtyMap: {},
     currentSchema: DOCUMENT_SCHEMAS.PURCHASE_ORDER,
+    uiDensity: (typeof localStorage !== 'undefined' && localStorage.getItem('erp_ui_density') as 'compact' | 'standard') || 'compact',
   },
 
   getters: {
+    uiDensity: (state) => state.uiDensity || 'compact',
     documents: (state) => state.documents,
     activeModuleId: (state) => state.activeModuleId,
     currentModuleKey: (state) => state.activeModuleId,
@@ -151,6 +154,26 @@ export const store = createStore<State>({
   },
 
   mutations: {
+    // 切换界面紧凑度密度 ('compact' | 'standard')
+    SET_UI_DENSITY(state, density: 'compact' | 'standard') {
+      state.uiDensity = density;
+      try {
+        localStorage.setItem('erp_ui_density', density);
+      } catch (e) {
+        // ignore
+      }
+    },
+
+    TOGGLE_UI_DENSITY(state) {
+      const next = state.uiDensity === 'compact' ? 'standard' : 'compact';
+      state.uiDensity = next;
+      try {
+        localStorage.setItem('erp_ui_density', next);
+      } catch (e) {
+        // ignore
+      }
+    },
+
     // 切换最外层活跃模块（一个模块占一个 page）
     SET_ACTIVE_MODULE(state, moduleId: ModuleKey) {
       state.activeModuleId = moduleId;

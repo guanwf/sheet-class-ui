@@ -211,4 +211,44 @@
   padding: 8px 12px;
 }
 
+/* ==========================================================================
+   5. ERP 高密度紧凑模式专属样式 (Compact Mode UI Enhancement)
+   ========================================================================== */
+/* 当全局或容器处于紧凑模式时，将表格单元格与表头内边距进一步压缩，使一屏展示更多行 */
+.erp-density-compact .vxe-table--render-default.size--mini .vxe-body--column,
+.erp-density-compact .vxe-table--render-default.size--mini .vxe-header--column,
+.erp-density-compact .vxe-table--render-default.size--mini .vxe-footer--column {
+  height: 30px !important;
+  padding: 0 !important;
+}
+
+.erp-density-compact .vxe-table--render-default.size--mini .vxe-cell {
+  padding-left: 6px !important;
+  padding-right: 6px !important;
+  font-size: 11.5px !important;
+  line-height: 1.3 !important;
+}
+
+.erp-density-compact .vxe-table--render-default.size--mini .vxe-header--column .vxe-cell {
+  padding-left: 6px !important;
+  padding-right: 6px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+}
+
+/* 紧凑模式下表格内部的输入框、下拉框微调 */
+.erp-density-compact .vxe-table--render-default.size--mini .vxe-cell input,
+.erp-density-compact .vxe-table--render-default.size--mini .vxe-cell select {
+  height: 24px !important;
+  font-size: 11px !important;
+  padding: 0 4px !important;
+}
+
+/* 标准模式保留舒适间距 */
+.erp-density-standard .vxe-table--render-default.size--medium .vxe-body--column,
+.erp-density-standard .vxe-table--render-default.size--medium .vxe-header--column {
+  height: 42px !important;
+}
+
+
 

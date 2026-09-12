@@ -1,13 +1,13 @@
 <template>
-  <div class="bg-white border-b border-slate-200 p-3.5 sm:p-4 text-xs select-none">
+  <div :class="['bg-white border-b border-slate-200 text-xs select-none transition-all duration-150', isCompact ? 'p-2 sm:p-2.5' : 'p-3.5 sm:p-4']">
     <!-- 单据头顶部信息条 -->
-    <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+    <div :class="['flex items-center justify-between border-b border-slate-100', isCompact ? 'pb-1.5 mb-2' : 'pb-2.5 mb-3']">
       <div class="flex items-center space-x-3">
-        <h2 class="text-base font-bold text-slate-800 flex items-center space-x-2">
+        <h2 :class="['font-bold text-slate-800 flex items-center space-x-2', isCompact ? 'text-sm' : 'text-base']">
           <span>{{ title || '业务单据' }}</span>
           <span
             v-if="docNo || masterData?.docNo"
-            class="font-mono text-sm font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200"
+            :class="['font-mono font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200', isCompact ? 'text-xs' : 'text-sm']"
           >
             {{ docNo || masterData?.docNo }}
           </span>
@@ -43,9 +43,9 @@
         </span>
         <span
           v-else
-          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-300"
+          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300"
         >
-          草稿编制中
+          草稿待提交
         </span>
       </div>
 
@@ -85,114 +85,144 @@
         :update-fields="updateField"
       >
         <!-- 默认栅格样式 (Default Layout) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div :class="['grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6', isCompact ? 'gap-x-2.5 gap-y-1.5' : 'gap-3']">
           <template v-for="field in fields" :key="field.key">
             <div
               :class="[
-                'space-y-1',
+                isCompact && field.type !== 'textarea'
+                  ? 'flex items-center space-x-1.5'
+                  : (isCompact ? 'space-y-0.5' : 'space-y-1'),
                 getSpanClass(field.span || 1),
               ]"
             >
-              <label class="block text-slate-500 font-medium text-[11px]">
+              <label
+                :class="[
+                  isCompact && field.type !== 'textarea'
+                    ? 'w-18 shrink-0 text-right text-slate-500 font-medium text-[11px] truncate'
+                    : 'block text-slate-500 font-medium text-[11px]'
+                ]"
+                :title="field.label"
+              >
                 {{ field.label }}
                 <span v-if="field.required" class="text-rose-500 font-bold">*</span>
               </label>
 
-              <!-- 字段级自定义插槽：业务若想替换某单个控件可覆盖 #field-[key] -->
-              <slot
-                :name="`field-${field.key}`"
-                :field="field"
-                :value="masterData[field.key]"
-                :master="masterData"
-                :update-value="(val: any) => updateField(field.key, val)"
-              >
-                <!-- 1. 文本输入 -->
-                <input
-                  v-if="field.type === 'text'"
-                  type="text"
+              <div :class="isCompact && field.type !== 'textarea' ? 'flex-1 min-w-0' : 'w-full'">
+                <!-- 字段级自定义插槽：业务若想替换某单个控件可覆盖 #field-[key] -->
+                <slot
+                  :name="`field-${field.key}`"
+                  :field="field"
                   :value="masterData[field.key]"
-                  :disabled="readonly || field.disabled"
-                  :placeholder="field.placeholder || `请输入${field.label}`"
-                  @input="updateField(field.key, ($event.target as HTMLInputElement).value)"
-                  class="w-full h-8 px-2.5 bg-slate-50 border border-slate-300 rounded text-slate-800 text-xs focus:bg-white focus:border-indigo-500 focus:outline-none disabled:opacity-60"
-                />
-
-                <!-- 2. 数字输入 -->
-                <input
-                  v-else-if="field.type === 'number'"
-                  type="number"
-                  :value="masterData[field.key]"
-                  :disabled="readonly || field.disabled"
-                  :step="field.step || 1"
-                  :min="field.min"
-                  :max="field.max"
-                  :placeholder="field.placeholder"
-                  @input="updateField(field.key, Number(($event.target as HTMLInputElement).value))"
-                  class="w-full h-8 px-2.5 bg-slate-50 border border-slate-300 rounded text-slate-800 font-mono text-xs focus:bg-white focus:border-indigo-500 focus:outline-none disabled:opacity-60"
-                />
-
-                <!-- 3. 日期选择 -->
-                <input
-                  v-else-if="field.type === 'date'"
-                  type="date"
-                  :value="masterData[field.key]"
-                  :disabled="readonly || field.disabled"
-                  @input="updateField(field.key, ($event.target as HTMLInputElement).value)"
-                  class="w-full h-8 px-2.5 bg-slate-50 border border-slate-300 rounded text-slate-800 text-xs focus:bg-white focus:border-indigo-500 focus:outline-none disabled:opacity-60"
-                />
-
-                <!-- 4. 下拉选择 -->
-                <select
-                  v-else-if="field.type === 'select'"
-                  :value="masterData[field.key]"
-                  :disabled="readonly || field.disabled"
-                  @change="updateField(field.key, ($event.target as HTMLSelectElement).value)"
-                  class="w-full h-8 px-2 bg-slate-50 border border-slate-300 rounded text-slate-800 text-xs focus:bg-white focus:border-indigo-500 focus:outline-none disabled:opacity-60"
+                  :master="masterData"
+                  :update-value="(val: any) => updateField(field.key, val)"
                 >
-                  <option
-                    v-for="opt in field.options || []"
-                    :key="opt.value"
-                    :value="opt.value"
+                  <!-- 1. 文本输入 -->
+                  <input
+                    v-if="field.type === 'text'"
+                    type="text"
+                    :value="masterData[field.key]"
+                    :disabled="readonly || field.disabled"
+                    :placeholder="field.placeholder || `请输入${field.label}`"
+                    @input="updateField(field.key, ($event.target as HTMLInputElement).value)"
+                    :class="[
+                      'w-full bg-slate-50 border border-slate-300 rounded text-slate-800 text-xs focus:bg-white focus:border-indigo-500 focus:outline-none disabled:opacity-60',
+                      isCompact ? 'h-7 px-2 text-[11.5px]' : 'h-8 px-2.5'
+                    ]"
+                  />
+
+                  <!-- 2. 数字输入 -->
+                  <input
+                    v-else-if="field.type === 'number'"
+                    type="number"
+                    :value="masterData[field.key]"
+                    :disabled="readonly || field.disabled"
+                    :step="field.step || 1"
+                    :min="field.min"
+                    :max="field.max"
+                    :placeholder="field.placeholder"
+                    @input="updateField(field.key, Number(($event.target as HTMLInputElement).value))"
+                    :class="[
+                      'w-full bg-slate-50 border border-slate-300 rounded text-slate-800 font-mono text-xs focus:bg-white focus:border-indigo-500 focus:outline-none disabled:opacity-60',
+                      isCompact ? 'h-7 px-2 text-[11.5px]' : 'h-8 px-2.5'
+                    ]"
+                  />
+
+                  <!-- 3. 日期选择 -->
+                  <input
+                    v-else-if="field.type === 'date'"
+                    type="date"
+                    :value="masterData[field.key]"
+                    :disabled="readonly || field.disabled"
+                    @input="updateField(field.key, ($event.target as HTMLInputElement).value)"
+                    :class="[
+                      'w-full bg-slate-50 border border-slate-300 rounded text-slate-800 text-xs focus:bg-white focus:border-indigo-500 focus:outline-none disabled:opacity-60',
+                      isCompact ? 'h-7 px-2 text-[11.5px]' : 'h-8 px-2.5'
+                    ]"
+                  />
+
+                  <!-- 4. 下拉选择 -->
+                  <select
+                    v-else-if="field.type === 'select'"
+                    :value="masterData[field.key]"
+                    :disabled="readonly || field.disabled"
+                    @change="updateField(field.key, ($event.target as HTMLSelectElement).value)"
+                    :class="[
+                      'w-full bg-slate-50 border border-slate-300 rounded text-slate-800 text-xs focus:bg-white focus:border-indigo-500 focus:outline-none disabled:opacity-60',
+                      isCompact ? 'h-7 px-2 text-[11.5px]' : 'h-8 px-2'
+                    ]"
                   >
-                    {{ opt.label }}
-                  </option>
-                </select>
+                    <option
+                      v-for="opt in field.options || []"
+                      :key="opt.value"
+                      :value="opt.value"
+                    >
+                      {{ opt.label }}
+                    </option>
+                  </select>
 
-                <!-- 5. 文本域 -->
-                <textarea
-                  v-else-if="field.type === 'textarea'"
-                  :value="masterData[field.key]"
-                  :disabled="readonly || field.disabled"
-                  :placeholder="field.placeholder"
-                  rows="2"
-                  @input="updateField(field.key, ($event.target as HTMLTextAreaElement).value)"
-                  class="w-full p-2 bg-slate-50 border border-slate-300 rounded text-slate-800 text-xs focus:bg-white focus:border-indigo-500 focus:outline-none disabled:opacity-60"
-                ></textarea>
+                  <!-- 5. 文本域 -->
+                  <textarea
+                    v-else-if="field.type === 'textarea'"
+                    :value="masterData[field.key]"
+                    :disabled="readonly || field.disabled"
+                    :placeholder="field.placeholder"
+                    :rows="isCompact ? 1 : 2"
+                    @input="updateField(field.key, ($event.target as HTMLTextAreaElement).value)"
+                    :class="[
+                      'w-full bg-slate-50 border border-slate-300 rounded text-slate-800 text-xs focus:bg-white focus:border-indigo-500 focus:outline-none disabled:opacity-60 resize-y',
+                      isCompact ? 'p-1.5 min-h-[28px] text-[11.5px]' : 'p-2'
+                    ]"
+                  ></textarea>
 
-                <!-- 6. 查询精灵输入框 (SpiritInput) -->
-                <SpiritInput
-                  v-else-if="field.type === 'spirit'"
-                  :spirit-key="field.spiritKey || 'SHOP'"
-                  :model-value="masterData[field.key]"
-                  :display-value="getSpiritDisplayValue(field)"
-                  :disabled="readonly || field.disabled"
-                  :placeholder="field.placeholder"
-                  :mapping="field.spiritMapping"
-                  @select="(item, meta) => onSpiritFieldSelect(field, item, meta)"
-                  @confirm="(item, meta) => onSpiritFieldSelect(field, item, meta)"
-                  @clear="onSpiritFieldClear(field)"
-                />
+                  <!-- 6. 查询精灵输入框 (SpiritInput) -->
+                  <SpiritInput
+                    v-else-if="field.type === 'spirit'"
+                    :spirit-key="field.spiritKey || 'SHOP'"
+                    :model-value="masterData[field.key]"
+                    :display-value="getSpiritDisplayValue(field)"
+                    :disabled="readonly || field.disabled"
+                    :placeholder="field.placeholder"
+                    :mapping="field.spiritMapping"
+                    :compact="isCompact"
+                    @select="(item, meta) => onSpiritFieldSelect(field, item, meta)"
+                    @confirm="(item, meta) => onSpiritFieldSelect(field, item, meta)"
+                    @clear="onSpiritFieldClear(field)"
+                  />
 
-                <!-- 默认兜底 -->
-                <input
-                  v-else
-                  type="text"
-                  :value="masterData[field.key]"
-                  :disabled="readonly || field.disabled"
-                  @input="updateField(field.key, ($event.target as HTMLInputElement).value)"
-                  class="w-full h-8 px-2.5 bg-slate-50 border border-slate-300 rounded text-slate-800 text-xs focus:bg-white focus:border-indigo-500 focus:outline-none disabled:opacity-60"
-                />
-              </slot>
+                  <!-- 默认兜底 -->
+                  <input
+                    v-else
+                    type="text"
+                    :value="masterData[field.key]"
+                    :disabled="readonly || field.disabled"
+                    @input="updateField(field.key, ($event.target as HTMLInputElement).value)"
+                    :class="[
+                      'w-full bg-slate-50 border border-slate-300 rounded text-slate-800 text-xs focus:bg-white focus:border-indigo-500 focus:outline-none disabled:opacity-60',
+                      isCompact ? 'h-7 px-2 text-[11.5px]' : 'h-8 px-2.5'
+                    ]"
+                  />
+                </slot>
+              </div>
             </div>
           </template>
         </div>
@@ -203,6 +233,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { useStore } from 'vuex';
 import {
   CheckCircle2,
   Clock,
@@ -221,6 +252,7 @@ const props = withDefaults(
     status?: string;
     readonly?: boolean;
     defaultExpanded?: boolean;
+    density?: 'compact' | 'standard';
   }>(),
   {
     readonly: false,
@@ -232,6 +264,14 @@ const emit = defineEmits<{
   (e: 'update:modelValue', val: any): void;
   (e: 'change', payload: { field: string; value: any }): void;
 }>();
+
+const store = useStore();
+const isCompact = computed(() => {
+  if (props.density) {
+    return props.density === 'compact';
+  }
+  return store?.getters?.uiDensity === 'compact';
+});
 
 const expanded = ref(props.defaultExpanded);
 

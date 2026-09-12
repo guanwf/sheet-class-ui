@@ -8,7 +8,7 @@
       <div class="px-5 py-3 border-b border-slate-200 flex items-center justify-between bg-slate-50">
         <div class="flex items-center space-x-2">
           <Printer class="w-4 h-4 text-indigo-600" />
-          <h3 class="text-sm font-bold text-slate-800">标准企业采购订单凭证套打预览</h3>
+          <h3 class="text-sm font-bold text-slate-800">标准企业采购订单打印预览</h3>
         </div>
 
         <div class="flex items-center space-x-2">

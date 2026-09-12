@@ -14,16 +14,16 @@
         保存
       </button>
 
-      <!-- 送审按钮 -->
+      <!-- 审核按钮 (提交送审) -->
       <button
         v-if="status === 'draft' || status === 'rejected'"
         type="button"
         @click="$emit('submit')"
         class="inline-flex items-center px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-2xs transition"
-        title="提交给部门主管进行审批"
+        title="提交进入审核流程"
       >
         <Send class="w-3.5 h-3.5 mr-1" />
-        提交送审
+        审核
       </button>
 
       <!-- 审核通过按钮 -->
@@ -63,7 +63,7 @@
         复制单据
       </button>
 
-      <!-- 打印套打 -->
+      <!-- 打印 -->
       <button
         type="button"
         @click="$emit('print')"
@@ -71,7 +71,7 @@
         title="打开标准商务凭证打印预览"
       >
         <Printer class="w-3.5 h-3.5 mr-1 text-slate-400" />
-        凭证套打
+        打印
       </button>
 
       <!-- 规则与列模型配置 -->

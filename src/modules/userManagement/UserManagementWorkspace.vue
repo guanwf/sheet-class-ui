@@ -215,6 +215,17 @@
               <span>批量模拟生成</span>
             </button>
 
+            <!-- 虚拟滚动压测快速注入 2000 行 -->
+            <button
+              type="button"
+              @click="loadVirtualStressData(2000)"
+              class="inline-flex items-center px-2.5 py-1.5 rounded border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium text-xs transition cursor-pointer"
+              title="一键加载2,000行用户数据并切换至全量虚拟化滚动模式验证极速渲染"
+            >
+              <Zap class="w-3.5 h-3.5 mr-1 text-indigo-600" />
+              <span>压测 2,000 行</span>
+            </button>
+
             <button
               type="button"
               @click="exportCsv"
@@ -237,31 +248,51 @@
 
         <!-- 表格快捷操作提示与记录统计 -->
         <div class="px-4 py-1.5 bg-slate-50 border-b border-slate-200 text-[11px] text-slate-600 flex items-center justify-between shrink-0">
-          <div class="flex items-center space-x-1.5">
+          <div class="flex items-center space-x-2">
             <span class="w-1.5 h-1.5 rounded-full bg-[#25548d]"></span>
             <span>基于 <strong>pbs_user</strong> 表结构构建，支持雪花ID、租户唯一索引 (tenant_id, user_code)、密码策略与在职状态全生命周期管理。</span>
+            <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 font-mono text-[10px] border border-blue-200">
+              ⚡ 虚拟滚动引擎激活
+            </span>
           </div>
-          <span class="text-[#25548d] font-medium font-mono">
-            检索共 {{ filteredUsers.length }} 位用户（当前第 {{ currentPage }} / {{ totalPages || 1 }} 页）
-          </span>
+          <div class="flex items-center space-x-3">
+            <label class="inline-flex items-center cursor-pointer select-none space-x-1.5 text-xs text-slate-700">
+              <input
+                type="checkbox"
+                v-model="isVirtualAllMode"
+                class="rounded border-slate-300 text-[#25548d] focus:ring-0 cursor-pointer"
+              />
+              <span :class="isVirtualAllMode ? 'font-semibold text-indigo-700' : 'text-slate-600'">全量虚拟滚动模式</span>
+            </label>
+            <span class="text-[#25548d] font-medium font-mono">
+              检索共 {{ filteredUsers.length }} 位用户<template v-if="!isVirtualAllMode">（当前第 {{ currentPage }} / {{ totalPages || 1 }} 页）</template><template v-else>（全量虚拟视口已接管）</template>
+            </span>
+          </div>
         </div>
 
-        <!-- 2.3 vxe-table 高性能数据网格 -->
+        <!-- 2.3 vxe-table 高性能虚拟滚动数据网格封装 -->
         <div class="flex-1 w-full relative min-h-[260px]">
-          <vxe-table
-            ref="tableRef"
-            height="auto"
-            border
-            stripe
-            round
-            show-overflow
-            class="text-xs"
-            :data="pagedUsers"
-            :row-config="{ isHover: true, isCurrent: true, keyField: 'id' }"
-            :checkbox-config="{ trigger: 'row', highlight: true }"
-            @checkbox-change="onCheckboxChange"
-            @checkbox-all="onCheckboxAll"
+          <VxeVirtualScrollWrapper
+            ref="virtualWrapperRef"
+            height="100%"
+            :gt="20"
+            :show-metrics="true"
+            :item-count="displayUsers.length"
           >
+            <vxe-table
+              ref="tableRef"
+              height="auto"
+              border
+              stripe
+              round
+              show-overflow
+              class="text-xs"
+              :data="displayUsers"
+              :row-config="{ isHover: true, isCurrent: true, keyField: 'id' }"
+              :checkbox-config="{ trigger: 'row', highlight: true }"
+              @checkbox-change="onCheckboxChange"
+              @checkbox-all="onCheckboxAll"
+            >
             <!-- 复选框 -->
             <vxe-column type="checkbox" width="45" align="center" fixed="left" />
 
@@ -442,17 +473,26 @@
               </template>
             </vxe-column>
           </vxe-table>
-        </div>
+        </VxeVirtualScrollWrapper>
+      </div>
 
-        <!-- 2.4 分页器 -->
+        <!-- 2.4 分页器 (全量虚拟滚动模式下展示视口状态，普通模式展示常规分页) -->
         <div class="px-4 py-2 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs shrink-0">
           <div class="text-slate-500 flex items-center space-x-2">
-            <span>显示第 {{ (currentPage - 1) * pageSize + 1 }} 到 {{ Math.min(currentPage * pageSize, filteredUsers.length) }} 条</span>
-            <span>/</span>
-            <span>共 {{ filteredUsers.length }} 条记录</span>
+            <template v-if="!isVirtualAllMode">
+              <span>显示第 {{ (currentPage - 1) * pageSize + 1 }} 到 {{ Math.min(currentPage * pageSize, filteredUsers.length) }} 条</span>
+              <span>/</span>
+              <span>共 {{ filteredUsers.length }} 条记录</span>
+            </template>
+            <template v-else>
+              <span class="inline-flex items-center text-indigo-700 font-medium space-x-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>全量虚拟视口已接管渲染：共 <strong>{{ filteredUsers.length }}</strong> 条数据在极速虚拟滚动池内</span>
+              </span>
+            </template>
           </div>
 
-          <div class="flex items-center space-x-3">
+          <div v-if="!isVirtualAllMode" class="flex items-center space-x-3">
             <div class="flex items-center space-x-1">
               <span class="text-slate-500">每页:</span>
               <select
@@ -485,6 +525,15 @@
                 下一页
               </button>
             </div>
+          </div>
+          <div v-else class="flex items-center space-x-2">
+            <button
+              type="button"
+              @click="isVirtualAllMode = false"
+              class="px-2.5 py-1 rounded border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 text-xs transition cursor-pointer"
+            >
+              切回标准分页
+            </button>
           </div>
         </div>
       </div>
@@ -535,9 +584,11 @@ import {
   KeyRound,
   Sparkles,
   Download,
+  Zap,
 } from 'lucide-vue-next';
 import { PbsUser, PbsOrg } from '../../types/user';
 import { INITIAL_USERS, INITIAL_ORGS } from '../../data/initialUsers';
+import VxeVirtualScrollWrapper from '../../components/common/VxeVirtualScrollWrapper.vue';
 import UserEditModal from './UserEditModal.vue';
 import UserResetPasswordModal from './UserResetPasswordModal.vue';
 import UserBatchGenerateModal from './UserBatchGenerateModal.vue';
@@ -556,10 +607,12 @@ const searchOrgId = ref<string>('');
 const searchUserType = ref<any>('all');
 const searchFlag = ref<any>('all');
 
-// 分页
+// 分页与虚拟滚动模式
 const currentPage = ref(1);
 const pageSize = ref(10);
 const selectedRows = ref<PbsUser[]>([]);
+const isVirtualAllMode = ref(false);
+const virtualWrapperRef = ref<any>(null);
 
 // 弹窗状态
 const showEditModal = ref(false);
@@ -612,6 +665,14 @@ const totalPages = computed(() => Math.ceil(filteredUsers.value.length / pageSiz
 const pagedUsers = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value;
   return filteredUsers.value.slice(start, start + pageSize.value);
+});
+
+// 表格实际绑定的数据：全量虚拟滚动模式下直连 filteredUsers，普通模式下使用分页切片
+const displayUsers = computed(() => {
+  if (isVirtualAllMode.value) {
+    return filteredUsers.value;
+  }
+  return pagedUsers.value;
 });
 
 // 查询操作
@@ -713,6 +774,51 @@ const onConfirmResetPassword = ({ userIds, passType }: { userIds: string[]; pass
 const onBatchGenerated = (newUsers: PbsUser[]) => {
   users.value = [...newUsers, ...users.value];
   message.success(`已成功批量追加 ${newUsers.length} 位合规测试用户！`);
+};
+
+// 虚拟滚动极速压测加载
+const loadVirtualStressData = (count: number = 2000) => {
+  const SURNAMES = ['张', '王', '李', '赵', '陈', '刘', '杨', '黄', '吴', '周', '徐', '孙', '马', '朱', '胡', '林', '郭', '何'];
+  const GIVENS = ['伟', '芳', '娜', '敏', '静', '丽', '强', '磊', '军', '洋', '勇', '艳', '杰', '娟', '涛', '明', '超', '秀英', '浩', '欣'];
+  const orgList = orgs.value.length > 0 ? orgs.value : INITIAL_ORGS;
+  const newBatch: PbsUser[] = [];
+  const baseTime = Date.now();
+
+  for (let i = 0; i < count; i++) {
+    const s = SURNAMES[i % SURNAMES.length];
+    const g = GIVENS[(i * 3 + 7) % GIVENS.length];
+    const org = orgList[i % orgList.length];
+    const seqNum = String(10000 + (users.value.length + i)).padStart(6, '0');
+    const snowflakeId = `1839${baseTime}${String(i + 1).padStart(5, '0')}`;
+
+    newBatch.push({
+      id: snowflakeId,
+      tenant_id: 'default_tenant',
+      user_code: `stress_${seqNum}`,
+      user_name: `${s}${g}`,
+      org_id: org.id,
+      org_name: org.org_name,
+      user_type: i % 25 === 0 ? 1 : 2,
+      gender: (i % 3 === 0 ? 1 : i % 3 === 1 ? 2 : 0) as 0 | 1 | 2,
+      user_status: i % 30 === 0 ? 0 : 1,
+      flag: i % 20 === 0 ? 0 : 1,
+      mobile: `138${String(10000000 + (i % 90000000))}`,
+      email: `stress_${seqNum}@enterprise.com`,
+      begindate: '2024-01-01',
+      enddate: '2099-12-31',
+      entrydate: '2024-03-15',
+      create_time: new Date(baseTime - i * 60000).toLocaleString(),
+      modify_time: new Date().toLocaleString(),
+      pass_type: 1,
+    });
+  }
+
+  users.value = [...newBatch, ...users.value];
+  isVirtualAllMode.value = true;
+  message.success({
+    content: `已成功注入 ${count} 条合规企业用户！已自动开启【全量虚拟滚动模式】，总数 ${users.value.length} 条数据即刻流畅丝滑滚动。`,
+    duration: 3.5,
+  });
 };
 
 // 导出 CSV

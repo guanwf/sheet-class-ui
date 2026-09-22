@@ -3,6 +3,8 @@
     :open="visible"
     title="批量重置用户密码 (密文加密)"
     :width="460"
+    :mask-closable="false"
+    :keyboard="false"
     destroy-on-close
     @cancel="$emit('update:visible', false)"
     @ok="handleConfirm"

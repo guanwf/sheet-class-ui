@@ -3,6 +3,8 @@
     :open="visible"
     title="快速追加生成测试用户 (支持雪花算法大ID)"
     :width="500"
+    :mask-closable="false"
+    :keyboard="false"
     destroy-on-close
     @cancel="$emit('update:visible', false)"
     @ok="handleBatchGenerate"
@@ -17,7 +19,23 @@
       <div class="grid grid-cols-2 gap-3">
         <div>
           <label class="font-medium text-slate-700 block mb-1">生成数量 (行):</label>
-          <a-input-number v-model:value="count" :min="1" :max="50" class="w-full" size="middle" />
+          <div class="flex items-center space-x-1.5">
+            <a-input-number v-model:value="count" :min="1" :max="10000" class="flex-1" size="middle" />
+            <button
+              type="button"
+              @click="count = 1000"
+              class="px-2 py-1 text-[11px] font-mono bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded border border-indigo-200 transition"
+            >
+              1k
+            </button>
+            <button
+              type="button"
+              @click="count = 3000"
+              class="px-2 py-1 text-[11px] font-mono bg-purple-50 hover:bg-purple-100 text-purple-700 rounded border border-purple-200 transition"
+            >
+              3k
+            </button>
+          </div>
         </div>
         <div>
           <label class="font-medium text-slate-700 block mb-1">账号前缀 (user_code):</label>
@@ -67,11 +85,12 @@ const handleBatchGenerate = () => {
   const firstNames = ['赵', '钱', '孙', '李', '周', '吴', '郑', '王', '冯', '陈', '楚', '魏', '蒋', '沈', '韩', '杨'];
   const lastNames = ['伟', '芳', '娜', '敏', '静', '杰', '强', '军', '磊', '洋', '勇', '艳', '博', '涛', '明', '超'];
 
+  const baseTimestamp = Date.now();
   for (let i = 1; i <= count.value; i++) {
     const randomSuffix = Math.floor(Math.random() * 8999 + 1000);
-    const code = `${prefix.value}${Date.now().toString().slice(-4)}_${i}`;
+    const code = `${prefix.value}${baseTimestamp.toString().slice(-4)}_${i}`;
     const name = `${firstNames[Math.floor(Math.random() * firstNames.length)]}${lastNames[Math.floor(Math.random() * lastNames.length)]}`;
-    const snowflakeId = `1839${Date.now()}${Math.floor(Math.random() * 899 + 100)}`;
+    const snowflakeId = `1839${baseTimestamp}${String(i).padStart(4, '0')}`;
 
     result.push({
       id: snowflakeId,

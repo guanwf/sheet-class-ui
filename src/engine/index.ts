@@ -8,3 +8,5 @@ export { default as DocHeaderForm } from './components/DocHeaderForm.vue';
 export { default as DocEditableGrid } from './components/DocEditableGrid.vue';
 export { default as DocStatusBar } from './components/DocStatusBar.vue';
 export { default as DocDeltaPayloadModal } from './components/DocDeltaPayloadModal.vue';
+export { vVxeVirtual } from '../directives/vxeVirtual';
+export { default as VxeVirtualScrollWrapper } from '../components/common/VxeVirtualScrollWrapper.vue';

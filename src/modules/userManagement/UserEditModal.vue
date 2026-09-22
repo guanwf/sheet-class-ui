@@ -4,6 +4,8 @@
     :title="isEdit ? `编辑用户信息 [ ${formData.user_code} ]` : '新建系统用户 (pbs_user)'"
     :width="900"
     :confirm-loading="submitting"
+    :mask-closable="false"
+    :keyboard="false"
     destroy-on-close
     @cancel="handleCancel"
     @ok="handleSubmit"

@@ -15,6 +15,8 @@ import Antd from 'ant-design-vue';
 import 'ant-design-vue/dist/reset.css';
 
 import './index.css';
+import { vVxeVirtual } from './directives/vxeVirtual';
+import VxeVirtualScrollWrapper from './components/common/VxeVirtualScrollWrapper.vue';
 
 // 注册 vxe-table 快捷键插件
 VxeUI.use(VXETablePluginShortcutKey as any);
@@ -25,5 +27,7 @@ app.use(router);
 app.use(VxePCUI);
 app.use(VxeTable);
 app.use(Antd);
+app.directive('vxe-virtual', vVxeVirtual);
+app.component('VxeVirtualScrollWrapper', VxeVirtualScrollWrapper);
 
 app.mount('#app');

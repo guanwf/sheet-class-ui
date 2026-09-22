@@ -17,42 +17,25 @@
         <div class="hidden sm:flex items-center text-slate-400 text-[11px] space-x-1">
           <span>当前激活模块:</span>
           <span class="text-[#93c5fd] font-semibold">
-            {{ activeModuleId === 'RETURN_ORDER' ? '🔄 采购退货单 (RO)' : '📦 采购订单 (PO)' }}
+            {{
+              activeModuleId === 'RETURN_ORDER'
+                ? '🔄 采购退货单 (RO)'
+                : activeModuleId === 'USER_MANAGEMENT'
+                ? '👥 用户管理 (pbs_user)'
+                : '📦 采购订单 (PO)'
+            }}
           </span>
         </div>
       </div>
 
       <!-- 右侧操作与用户信息 -->
       <div class="flex items-center space-x-3 text-slate-400 text-[11px]">
-        <!-- 密度切换开关 -->
-        <div class="flex items-center bg-slate-800 p-0.5 rounded border border-slate-700">
-          <span class="text-[10px] text-slate-400 px-1 font-medium">显示密度:</span>
-          <button
-            type="button"
-            @click="setDensity('compact')"
-            :class="[
-              'px-2 py-0.5 rounded text-[11px] font-medium transition flex items-center space-x-1',
-              uiDensity === 'compact'
-                ? 'bg-[#25548d] text-white shadow-2xs font-semibold'
-                : 'text-slate-400 hover:text-slate-200'
-            ]"
-            title="紧凑模式：主表栅格横向紧凑、网格行高 30px、一屏可见更多行明细"
-          >
-            <span>紧凑</span>
-          </button>
-          <button
-            type="button"
-            @click="setDensity('standard')"
-            :class="[
-              'px-2 py-0.5 rounded text-[11px] font-medium transition flex items-center space-x-1',
-              uiDensity === 'standard'
-                ? 'bg-[#25548d] text-white shadow-2xs font-semibold'
-                : 'text-slate-400 hover:text-slate-200'
-            ]"
-            title="标准模式：舒适排版与间距"
-          >
-            <span>标准</span>
-          </button>
+        <!-- 密度标识（系统固定紧凑高密模式） -->
+        <div class="flex items-center bg-slate-800 px-2 py-0.5 rounded border border-slate-700">
+          <span class="text-[10px] text-slate-400 mr-1.5 font-medium">显示密度:</span>
+          <span class="px-1.5 py-0.2 rounded text-[10px] bg-[#25548d] text-white font-medium shadow-2xs">
+            紧凑模式
+          </span>
         </div>
 
         <div class="flex items-center space-x-1 bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700/50">
@@ -105,6 +88,14 @@
           @print-document="onPrintDocument"
         />
       </div>
+
+      <!-- 模块 3: 用户管理模块 Page (基于 pbs_user 表结构实现的高保真用户中心) -->
+      <div
+        v-show="activeModuleId === 'USER_MANAGEMENT'"
+        class="flex-1 flex flex-col min-h-0 relative overflow-hidden"
+      >
+        <UserManagementWorkspace />
+      </div>
     </main>
 
     <!-- 全局轻量级 Toast 提示 -->
@@ -133,6 +124,7 @@ import { State } from '../store';
 import { DocumentRecord, ModuleKey } from '../types/document';
 import OuterModuleTabBar from '../components/document/OuterModuleTabBar.vue';
 import DocModuleWorkspace from '../components/document/DocModuleWorkspace.vue';
+import UserManagementWorkspace from '../modules/userManagement/UserManagementWorkspace.vue';
 import PrintPreviewModal from '../components/document/PrintPreviewModal.vue';
 import { message } from 'ant-design-vue';
 

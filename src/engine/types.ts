@@ -20,6 +20,7 @@ export interface DocActionItem {
   variant?: 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'outline';
   title?: string;
   shortcut?: string;
+  permission?: string; // 权限标识码，如 'po:edit', 'po:approve'
   visible?: (ctx: DocActionContext) => boolean;
   disabled?: (ctx: DocActionContext) => boolean;
   onClick?: (ctx: DocActionContext) => void | Promise<void>;

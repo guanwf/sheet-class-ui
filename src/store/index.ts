@@ -55,6 +55,13 @@ export const store = createStore<State>({
         icon: '🔄',
         description: '门店退货、质检留样与冲抵台账',
       },
+      {
+        id: 'USER_MANAGEMENT',
+        title: '用户管理',
+        code: 'USER',
+        icon: '👥',
+        description: 'pbs_user 用户组织、权限与生命周期管理',
+      },
     ],
     moduleSessions: {
       PURCHASE_ORDER: {
@@ -80,6 +87,18 @@ export const store = createStore<State>({
           },
         ],
         activeTabId: 'tab-ro-list',
+      },
+      USER_MANAGEMENT: {
+        tabs: [
+          {
+            id: 'tab-user-list',
+            type: 'LIST',
+            title: '用户账号列表',
+            closable: false,
+            moduleId: 'USER_MANAGEMENT',
+          },
+        ],
+        activeTabId: 'tab-user-list',
       },
     },
     dirtyMap: {},

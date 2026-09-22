@@ -86,37 +86,10 @@
 
       <!-- 右侧：代码指南速查与报文查看 -->
       <div class="flex items-center space-x-2">
-        <!-- 紧凑 / 标准 密度切换按钮 -->
-        <div class="flex items-center bg-slate-800 p-0.5 rounded border border-slate-700">
-          <button
-            type="button"
-            @click="setDensity('compact')"
-            :class="[
-              'px-2 py-0.5 rounded text-[11px] font-medium transition flex items-center space-x-1',
-              uiDensity === 'compact'
-                ? 'bg-[#25548d] text-white shadow-2xs font-semibold'
-                : 'text-slate-400 hover:text-slate-200'
-            ]"
-            title="紧凑模式：主表横向行内排布、单元格行高 30px、一屏可看更多行明细"
-          >
-            <Shrink class="w-3 h-3 mr-0.5" />
-            <span>紧凑</span>
-          </button>
-          <button
-            type="button"
-            @click="setDensity('standard')"
-            :class="[
-              'px-2 py-0.5 rounded text-[11px] font-medium transition flex items-center space-x-1',
-              uiDensity === 'standard'
-                ? 'bg-[#25548d] text-white shadow-2xs font-semibold'
-                : 'text-slate-400 hover:text-slate-200'
-            ]"
-            title="标准模式：舒适排版与间距"
-          >
-            <Expand class="w-3 h-3 mr-0.5" />
-            <span>标准</span>
-          </button>
-        </div>
+        <span class="inline-flex items-center px-2 py-0.5 rounded bg-slate-800 text-[11px] text-slate-300 border border-slate-700 font-medium">
+          <Shrink class="w-3 h-3 mr-1 text-[#93c5fd]" />
+          <span>紧凑模式</span>
+        </span>
 
         <button
           type="button"

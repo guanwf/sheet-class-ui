@@ -59,11 +59,13 @@ const props = withDefaults(
     doc: any;
     isReadOnly?: boolean;
     isDirty?: boolean;
+    userPermissions?: string[]; // 当前用户拥有的权限标识数组，如 ['*'] 或 ['po:save', 'po:submit']
   }>(),
   {
     actions: () => [],
     isReadOnly: false,
     isDirty: false,
+    userPermissions: () => ['*'], // 默认全权限
   }
 );
 
@@ -78,12 +80,20 @@ const actionContext = computed<DocActionContext>(() => ({
   isDirty: props.isDirty,
 }));
 
-// 计算按钮的可见性与禁用状态
+// 计算按钮的可见性与禁用状态（含权限体系校验）
 const computedActions = computed(() => {
   const ctx = actionContext.value;
+  const userPerms = props.userPermissions || ['*'];
+  const hasWildcard = userPerms.includes('*');
+
   return (props.actions || []).map((btn) => {
+    // 权限校验：如果指定了 permission 属性，则检查当前用户权限池
+    const hasPermission = !btn.permission || hasWildcard || userPerms.includes(btn.permission);
+
     let isDisabled = false;
-    if (typeof btn.disabled === 'function') {
+    if (!hasPermission) {
+      isDisabled = true;
+    } else if (typeof btn.disabled === 'function') {
       isDisabled = btn.disabled(ctx);
     } else if (typeof btn.disabled === 'boolean') {
       isDisabled = btn.disabled;
@@ -100,6 +110,7 @@ const computedActions = computed(() => {
       ...btn,
       isDisabled,
       isVisible,
+      title: !hasPermission ? `无操作权限 [${btn.permission}]` : btn.title,
     };
   });
 });

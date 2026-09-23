@@ -22,6 +22,10 @@
                 ? '🔄 采购退货单 (RO)'
                 : activeModuleId === 'USER_MANAGEMENT'
                 ? '👥 用户管理 (pbs_user)'
+                : activeModuleId === 'MODULE_MANAGEMENT'
+                ? '🧩 模块管理 (pbs_module)'
+                : activeModuleId === 'MENU_MANAGEMENT'
+                ? '🗂️ 菜单管理 (pbs_menu)'
                 : '📦 采购订单 (PO)'
             }}
           </span>
@@ -96,6 +100,22 @@
       >
         <UserManagementWorkspace />
       </div>
+
+      <!-- 模块 4: 模块管理模块 Page (基于 pbs_module 表结构实现的功能定义与位掩码权限中心) -->
+      <div
+        v-show="activeModuleId === 'MODULE_MANAGEMENT'"
+        class="flex-1 flex flex-col min-h-0 relative overflow-hidden"
+      >
+        <ModuleManagementWorkspace />
+      </div>
+
+      <!-- 模块 5: 菜单管理模块 Page (基于 pbs_menufolder & pbs_menufolderitem 实现的多级菜单树与模块挂载) -->
+      <div
+        v-show="activeModuleId === 'MENU_MANAGEMENT'"
+        class="flex-1 flex flex-col min-h-0 relative overflow-hidden"
+      >
+        <MenuManagementWorkspace />
+      </div>
     </main>
 
     <!-- 全局轻量级 Toast 提示 -->
@@ -125,6 +145,8 @@ import { DocumentRecord, ModuleKey } from '../types/document';
 import OuterModuleTabBar from '../components/document/OuterModuleTabBar.vue';
 import DocModuleWorkspace from '../components/document/DocModuleWorkspace.vue';
 import UserManagementWorkspace from '../modules/userManagement/UserManagementWorkspace.vue';
+import ModuleManagementWorkspace from '../modules/moduleManagement/ModuleManagementWorkspace.vue';
+import MenuManagementWorkspace from '../modules/menuManagement/MenuManagementWorkspace.vue';
 import PrintPreviewModal from '../components/document/PrintPreviewModal.vue';
 import { message } from 'ant-design-vue';
 

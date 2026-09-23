@@ -62,6 +62,20 @@ export const store = createStore<State>({
         icon: '👥',
         description: 'pbs_user 用户组织、权限与生命周期管理',
       },
+      {
+        id: 'MODULE_MANAGEMENT',
+        title: '模块管理',
+        code: 'MOD',
+        icon: '🧩',
+        description: 'pbs_module 业务模块定义、操作地址与位掩码权限配置',
+      },
+      {
+        id: 'MENU_MANAGEMENT',
+        title: '菜单管理',
+        code: 'MENU',
+        icon: '🗂️',
+        description: 'pbs_menufolder & pbs_menufolderitem 多层级菜单树与模块挂载',
+      },
     ],
     moduleSessions: {
       PURCHASE_ORDER: {
@@ -99,6 +113,30 @@ export const store = createStore<State>({
           },
         ],
         activeTabId: 'tab-user-list',
+      },
+      MODULE_MANAGEMENT: {
+        tabs: [
+          {
+            id: 'tab-module-list',
+            type: 'LIST',
+            title: '模块元数据台账',
+            closable: false,
+            moduleId: 'MODULE_MANAGEMENT',
+          },
+        ],
+        activeTabId: 'tab-module-list',
+      },
+      MENU_MANAGEMENT: {
+        tabs: [
+          {
+            id: 'tab-menu-tree',
+            type: 'LIST',
+            title: '菜单树与挂载管理',
+            closable: false,
+            moduleId: 'MENU_MANAGEMENT',
+          },
+        ],
+        activeTabId: 'tab-menu-tree',
       },
     },
     dirtyMap: {},

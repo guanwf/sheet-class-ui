@@ -76,6 +76,13 @@ export const store = createStore<State>({
         icon: '🗂️',
         description: 'pbs_menufolder & pbs_menufolderitem 多层级菜单树与模块挂载',
       },
+      {
+        id: 'DICT_MANAGEMENT',
+        title: '数据字典',
+        code: 'DICT',
+        icon: '📚',
+        description: '平台/租户/组织多级静态字典、版本审计发布与Caffeine/Redis二级缓存',
+      },
     ],
     moduleSessions: {
       PURCHASE_ORDER: {
@@ -137,6 +144,18 @@ export const store = createStore<State>({
           },
         ],
         activeTabId: 'tab-menu-tree',
+      },
+      DICT_MANAGEMENT: {
+        tabs: [
+          {
+            id: 'tab-dict-management',
+            type: 'LIST',
+            title: '数据字典管理',
+            closable: false,
+            moduleId: 'DICT_MANAGEMENT',
+          },
+        ],
+        activeTabId: 'tab-dict-management',
       },
     },
     dirtyMap: {},

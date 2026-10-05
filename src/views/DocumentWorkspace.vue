@@ -26,6 +26,8 @@
                 ? '🧩 模块管理 (pbs_module)'
                 : activeModuleId === 'MENU_MANAGEMENT'
                 ? '🗂️ 菜单管理 (pbs_menu)'
+                : activeModuleId === 'DICT_MANAGEMENT'
+                ? '📚 数据字典 (dict)'
                 : '📦 采购订单 (PO)'
             }}
           </span>
@@ -116,6 +118,14 @@
       >
         <MenuManagementWorkspace />
       </div>
+
+      <!-- 模块 6: 数据字典管理模块 Page (基于平台/租户/组织多级覆盖、版本审计与二级缓存) -->
+      <div
+        v-show="activeModuleId === 'DICT_MANAGEMENT'"
+        class="flex-1 flex flex-col min-h-0 relative overflow-hidden"
+      >
+        <DictManagementWorkspace />
+      </div>
     </main>
 
     <!-- 全局轻量级 Toast 提示 -->
@@ -147,6 +157,7 @@ import DocModuleWorkspace from '../components/document/DocModuleWorkspace.vue';
 import UserManagementWorkspace from '../modules/userManagement/UserManagementWorkspace.vue';
 import ModuleManagementWorkspace from '../modules/moduleManagement/ModuleManagementWorkspace.vue';
 import MenuManagementWorkspace from '../modules/menuManagement/MenuManagementWorkspace.vue';
+import DictManagementWorkspace from '../modules/dictManagement/DictManagementWorkspace.vue';
 import PrintPreviewModal from '../components/document/PrintPreviewModal.vue';
 import { message } from 'ant-design-vue';
 

@@ -185,7 +185,7 @@ export interface DocumentRecord {
   logs: AuditLogItem[];
 }
 
-export type ModuleKey = 'PURCHASE_ORDER' | 'RETURN_ORDER' | 'USER_MANAGEMENT' | 'MODULE_MANAGEMENT' | 'MENU_MANAGEMENT' | 'DICT_MANAGEMENT';
+export type ModuleKey = 'PURCHASE_ORDER' | 'RETURN_ORDER' | 'USER_MANAGEMENT' | 'MODULE_MANAGEMENT' | 'MENU_MANAGEMENT' | 'DICT_MANAGEMENT' | 'PRINT_TEMPLATE';
 
 export interface ModuleSessionState {
   tabs: TabPageItem[];

@@ -83,6 +83,13 @@ export const store = createStore<State>({
         icon: '📚',
         description: '平台/租户/组织多级静态字典、版本审计发布与Caffeine/Redis二级缓存',
       },
+      {
+        id: 'PRINT_TEMPLATE',
+        title: '打印模板',
+        code: 'PRINT',
+        icon: '🖨️',
+        description: 'pbs_print_template 打印套打模板管理、JRXML解析编译与版本发布',
+      },
     ],
     moduleSessions: {
       PURCHASE_ORDER: {
@@ -156,6 +163,18 @@ export const store = createStore<State>({
           },
         ],
         activeTabId: 'tab-dict-management',
+      },
+      PRINT_TEMPLATE: {
+        tabs: [
+          {
+            id: 'tab-print-template',
+            type: 'LIST',
+            title: '打印模板管理',
+            closable: false,
+            moduleId: 'PRINT_TEMPLATE',
+          },
+        ],
+        activeTabId: 'tab-print-template',
       },
     },
     dirtyMap: {},

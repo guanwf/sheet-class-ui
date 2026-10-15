@@ -28,6 +28,8 @@
                 ? '🗂️ 菜单管理 (pbs_menu)'
                 : activeModuleId === 'DICT_MANAGEMENT'
                 ? '📚 数据字典 (dict)'
+                : activeModuleId === 'PRINT_TEMPLATE'
+                ? '🖨️ 打印模板 (pbs_print_template)'
                 : '📦 采购订单 (PO)'
             }}
           </span>
@@ -126,6 +128,14 @@
       >
         <DictManagementWorkspace />
       </div>
+
+      <!-- 模块 7: 打印模板管理模块 Page (基于 pbs_print_template 实现的JRXML解析、编译与版本控制) -->
+      <div
+        v-show="activeModuleId === 'PRINT_TEMPLATE'"
+        class="flex-1 flex flex-col min-h-0 relative overflow-hidden"
+      >
+        <PrintTemplateWorkspace />
+      </div>
     </main>
 
     <!-- 全局轻量级 Toast 提示 -->
@@ -158,6 +168,7 @@ import UserManagementWorkspace from '../modules/userManagement/UserManagementWor
 import ModuleManagementWorkspace from '../modules/moduleManagement/ModuleManagementWorkspace.vue';
 import MenuManagementWorkspace from '../modules/menuManagement/MenuManagementWorkspace.vue';
 import DictManagementWorkspace from '../modules/dictManagement/DictManagementWorkspace.vue';
+import PrintTemplateWorkspace from '../modules/printTemplate/PrintTemplateWorkspace.vue';
 import PrintPreviewModal from '../components/document/PrintPreviewModal.vue';
 import { message } from 'ant-design-vue';
 

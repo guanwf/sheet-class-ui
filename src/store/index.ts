@@ -39,7 +39,7 @@ export interface State {
 export const store = createStore<State>({
   state: {
     documents: INITIAL_DOCUMENTS,
-    activeModuleId: 'PURCHASE_ORDER',
+    activeModuleId: 'DICT_MANAGEMENT',
     outerModules: [
       {
         id: 'PURCHASE_ORDER',
@@ -89,6 +89,13 @@ export const store = createStore<State>({
         code: 'PRINT',
         icon: '🖨️',
         description: 'pbs_print_template 打印套打模板管理、JRXML解析编译与版本发布',
+      },
+      {
+        id: 'CONFIG_MANAGEMENT',
+        title: '系统配置',
+        code: 'CONF',
+        icon: '⚙️',
+        description: 'pbs_config 系统参数配置表，多态类型值(STRING/JSON/NUMBER/BOOLEAN)与热生效控制',
       },
     ],
     moduleSessions: {
@@ -175,6 +182,18 @@ export const store = createStore<State>({
           },
         ],
         activeTabId: 'tab-print-template',
+      },
+      CONFIG_MANAGEMENT: {
+        tabs: [
+          {
+            id: 'tab-config-management',
+            type: 'LIST',
+            title: '系统参数配置',
+            closable: false,
+            moduleId: 'CONFIG_MANAGEMENT',
+          },
+        ],
+        activeTabId: 'tab-config-management',
       },
     },
     dirtyMap: {},

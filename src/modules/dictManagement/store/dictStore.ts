@@ -188,19 +188,19 @@ export const useDictStore = defineStore('dictStore', {
             ...payload,
             tenantId: this.currentTenantId,
           });
-          message.success('编辑内容已暂存至草稿，发布后生效');
+          message.success('字典条目更新成功');
         } else {
           await dictApi.addItemDraft({
             ...payload,
             tenantId: this.currentTenantId,
             typeCode: this.selectedTypeCode,
           });
-          message.success('新增条目已暂存至草稿，发布后生效');
+          message.success('字典条目新增成功');
         }
         this.itemDrawerVisible = false;
         await this.fetchCurrentTypeItems();
       } catch (err: any) {
-        message.error(err.message || '保存草稿失败');
+        message.error(err.message || '保存失败');
         throw err;
       }
     },
@@ -208,7 +208,7 @@ export const useDictStore = defineStore('dictStore', {
     async toggleStatus(id: string) {
       try {
         await dictApi.toggleItemStatus(id);
-        message.success('状态变更已暂存至草稿，发布审批后生效');
+        message.success('状态已成功切换');
         await this.fetchCurrentTypeItems();
       } catch (err: any) {
         message.error(err.message || '状态切换失败');

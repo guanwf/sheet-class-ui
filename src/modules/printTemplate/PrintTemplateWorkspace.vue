@@ -132,24 +132,6 @@
       <!-- 2.2 组合搜索与过滤工具栏 (直接在单表上方提供全维度筛选) -->
       <section class="bg-white border border-[#DDE3EA] rounded-lg p-3 shadow-2xs flex flex-wrap items-center justify-between gap-3 shrink-0 text-xs">
         <div class="flex flex-wrap items-center gap-3">
-          <!-- 业务模块下拉选择 -->
-          <div class="flex items-center space-x-1.5">
-            <label for="filter-module" class="font-medium text-slate-600 shrink-0">业务模块:</label>
-            <select
-              id="filter-module"
-              v-model="store.selectedModuleId"
-              @change="store.fetchTemplates()"
-              aria-label="筛选业务模块"
-              class="h-8 px-2.5 bg-slate-50 text-slate-800 border border-slate-300 rounded-md focus:border-[#1F4FD8] focus:ring-1 focus:ring-[#1F4FD8] font-sans"
-            >
-              <option value="all">全部业务模块 (ALL)</option>
-              <option value="order">采购订单 (order)</option>
-              <option value="return_order">采购退货单 (return_order)</option>
-              <option value="invoice">发票与对账单 (invoice)</option>
-              <option value="inventory">入库与库管单 (inventory)</option>
-              <option value="delivery">发运与物流单 (delivery)</option>
-            </select>
-          </div>
 
           <!-- 启停状态筛选 -->
           <div class="flex items-center space-x-1.5">

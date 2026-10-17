@@ -221,10 +221,10 @@
         <button
           type="button"
           @click="onSubmit"
-          aria-label="暂存条目至草稿"
+          aria-label="保存字典条目"
           class="h-11 min-h-[44px] px-5 text-xs font-medium text-white bg-[#1F4FD8] rounded-[6px] hover:bg-[#1940B0] active:bg-[#153494] transition-colors cursor-pointer shadow-xs"
         >
-          暂存至草稿
+          保存条目
         </button>
       </div>
     </div>

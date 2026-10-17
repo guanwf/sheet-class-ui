@@ -136,6 +136,14 @@
       >
         <PrintTemplateWorkspace />
       </div>
+
+      <!-- 模块 8: 系统配置管理模块 Page (基于 pbs_config 实现的STRING/JSON/NUMBER/BOOLEAN多态类型配置中心) -->
+      <div
+        v-show="activeModuleId === 'CONFIG_MANAGEMENT'"
+        class="flex-1 flex flex-col min-h-0 relative overflow-hidden"
+      >
+        <ConfigManagementWorkspace />
+      </div>
     </main>
 
     <!-- 全局轻量级 Toast 提示 -->
@@ -169,6 +177,7 @@ import ModuleManagementWorkspace from '../modules/moduleManagement/ModuleManagem
 import MenuManagementWorkspace from '../modules/menuManagement/MenuManagementWorkspace.vue';
 import DictManagementWorkspace from '../modules/dictManagement/DictManagementWorkspace.vue';
 import PrintTemplateWorkspace from '../modules/printTemplate/PrintTemplateWorkspace.vue';
+import ConfigManagementWorkspace from '../modules/configManagement/ConfigManagementWorkspace.vue';
 import PrintPreviewModal from '../components/document/PrintPreviewModal.vue';
 import { message } from 'ant-design-vue';
 

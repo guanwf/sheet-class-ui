@@ -18,12 +18,8 @@
       </section>
     </div>
 
-    <!-- 3. 底部发布状态栏 -->
-    <DictPublishStatusBar />
-
-    <!-- 模态框与抽屉组 -->
+    <!-- 模态框与抽屉组（已去除版本发布底栏与历史回滚抽屉） -->
     <DictItemDrawer />
-    <DictHistoryDrawer />
     <DictUsageModal />
     <DictTypeModal />
     <DictImportExportModal />
@@ -37,9 +33,7 @@ import DictTopBar from './components/DictTopBar.vue';
 import DictTypeSidebar from './components/DictTypeSidebar.vue';
 import DictTypeHeader from './components/DictTypeHeader.vue';
 import DictItemTable from './components/DictItemTable.vue';
-import DictPublishStatusBar from './components/DictPublishStatusBar.vue';
 import DictItemDrawer from './components/DictItemDrawer.vue';
-import DictHistoryDrawer from './components/DictHistoryDrawer.vue';
 import DictUsageModal from './components/DictUsageModal.vue';
 import DictTypeModal from './components/DictTypeModal.vue';
 import DictImportExportModal from './components/DictImportExportModal.vue';

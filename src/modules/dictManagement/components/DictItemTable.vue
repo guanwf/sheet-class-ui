@@ -6,12 +6,9 @@
         <span class="font-medium text-[#0F172A]">字典明细条目列表</span>
         <span class="text-[#94A3B8]">/</span>
         <span>共 {{ dictStore.items.length }} 条记录</span>
-        <span v-if="dictStore.hasPendingDrafts" class="ml-2 px-2 py-0.5 text-[11px] font-medium rounded-full bg-[#EFF6FF] text-[#1F4FD8] border border-[#BFDBFE]">
-          当前有 {{ dictStore.draftCount }} 项草稿修改
-        </span>
       </div>
       <div class="text-[11px] text-[#94A3B8]">
-        提示：业务数据表仅关联存储条目编码 (item_code)
+        提示：业务数据表关联存储条目编码 (item_code)
       </div>
     </div>
 
@@ -38,12 +35,7 @@
           <!-- 递归树状行渲染 -->
           <template v-for="item in dictStore.treeItems" :key="item.id">
             <!-- 根条目 -->
-            <tr
-              :class="[
-                'hover:bg-[#F8FAFC] transition-colors',
-                item._draftStatus ? 'bg-[#F0F7FF]/60' : ''
-              ]"
-            >
+            <tr class="hover:bg-[#F8FAFC] transition-colors">
               <!-- 条目编码 (支持树形展开图标) -->
               <td class="py-2.5 px-4 font-mono font-medium">
                 <div class="flex items-center space-x-1.5">
@@ -68,26 +60,6 @@
                   <span v-else class="w-6 inline-block"></span>
 
                   <span class="text-[#0F172A]">{{ item.itemCode }}</span>
-
-                  <!-- 草稿修改状态徽标 -->
-                  <span
-                    v-if="item._draftStatus === 'NEW'"
-                    class="px-1.5 py-0.2 text-[10px] rounded bg-[#EFF6FF] text-[#1D4ED8] border border-[#BFDBFE] font-sans"
-                  >
-                    待发布新增
-                  </span>
-                  <span
-                    v-else-if="item._draftStatus === 'MODIFIED'"
-                    class="px-1.5 py-0.2 text-[10px] rounded bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A] font-sans"
-                  >
-                    待发布修改
-                  </span>
-                  <span
-                    v-else-if="item._draftStatus === 'TOGGLED'"
-                    class="px-1.5 py-0.2 text-[10px] rounded bg-[#F3E8FF] text-[#7E22CE] border border-[#E9D5FF] font-sans"
-                  >
-                    待发布启停
-                  </span>
                 </div>
               </td>
 
@@ -103,7 +75,7 @@
                 </div>
               </td>
 
-              <!-- 排序 -->
+              <!-- 排序号 -->
               <td class="py-2.5 px-3 text-center font-mono text-[#475569]">
                 {{ item.sortNo }}
               </td>
@@ -121,7 +93,7 @@
                 <span
                   :class="[
                     'inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium',
-                    (item._pendingStatus ?? item.status) === 1
+                    item.status === 1
                       ? 'bg-[#ECFDF5] text-[#065F46] border border-[#A7F3D0]'
                       : 'bg-[#F1F5F9] text-[#64748B] border border-[#CBD5E1]'
                   ]"
@@ -129,10 +101,10 @@
                   <span
                     :class="[
                       'w-1.5 h-1.5 rounded-full mr-1.5',
-                      (item._pendingStatus ?? item.status) === 1 ? 'bg-[#10B981]' : 'bg-[#94A3B8]'
+                      item.status === 1 ? 'bg-[#10B981]' : 'bg-[#94A3B8]'
                     ]"
                   ></span>
-                  {{ (item._pendingStatus ?? item.status) === 1 ? '启用中' : '已停用' }}
+                  {{ item.status === 1 ? '启用中' : '已停用' }}
                 </span>
               </td>
 
@@ -164,15 +136,15 @@
                   <button
                     type="button"
                     @click="dictStore.toggleStatus(item.id)"
-                    :aria-label="`${(item._pendingStatus ?? item.status) === 1 ? '停用' : '启用'}条目 ${item.itemCode}`"
+                    :aria-label="`${item.status === 1 ? '停用' : '启用'}条目 ${item.itemCode}`"
                     :class="[
                       'h-11 min-h-[44px] px-2 text-xs font-medium rounded-[4px] transition-colors cursor-pointer',
-                      (item._pendingStatus ?? item.status) === 1
+                      item.status === 1
                         ? 'text-[#DC2626] hover:bg-[#FEF2F2]'
                         : 'text-[#16A34A] hover:bg-[#F0FDF4]'
                     ]"
                   >
-                    {{ (item._pendingStatus ?? item.status) === 1 ? '停用' : '启用' }}
+                    {{ item.status === 1 ? '停用' : '启用' }}
                   </button>
                 </div>
               </td>
@@ -183,36 +155,13 @@
               <tr
                 v-for="sub in item.children"
                 :key="sub.id"
-                :class="[
-                  'hover:bg-[#F8FAFC] transition-colors bg-[#FAFBFD]',
-                  sub._draftStatus ? 'bg-[#F0F7FF]/70' : ''
-                ]"
+                class="hover:bg-[#F8FAFC] transition-colors bg-[#FAFBFD]"
               >
                 <!-- 子项条目编码 (带缩进与层级线条) -->
                 <td class="py-2 px-4 font-mono font-medium pl-10">
                   <div class="flex items-center space-x-1.5">
                     <span class="text-[#CBD5E1] mr-1">└─</span>
                     <span class="text-[#334155]">{{ sub.itemCode }}</span>
-
-                    <!-- 子项草稿徽标 -->
-                    <span
-                      v-if="sub._draftStatus === 'NEW'"
-                      class="px-1.5 py-0.2 text-[10px] rounded bg-[#EFF6FF] text-[#1D4ED8] border border-[#BFDBFE] font-sans"
-                    >
-                      待发布新增
-                    </span>
-                    <span
-                      v-else-if="sub._draftStatus === 'MODIFIED'"
-                      class="px-1.5 py-0.2 text-[10px] rounded bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A] font-sans"
-                    >
-                      待发布修改
-                    </span>
-                    <span
-                      v-else-if="sub._draftStatus === 'TOGGLED'"
-                      class="px-1.5 py-0.2 text-[10px] rounded bg-[#F3E8FF] text-[#7E22CE] border border-[#E9D5FF] font-sans"
-                    >
-                      待发布启停
-                    </span>
                   </div>
                 </td>
 
@@ -242,7 +191,7 @@
                   <span
                     :class="[
                       'inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium',
-                      (sub._pendingStatus ?? sub.status) === 1
+                      sub.status === 1
                         ? 'bg-[#ECFDF5] text-[#065F46] border border-[#A7F3D0]'
                         : 'bg-[#F1F5F9] text-[#64748B] border border-[#CBD5E1]'
                     ]"
@@ -250,10 +199,10 @@
                     <span
                       :class="[
                         'w-1.5 h-1.5 rounded-full mr-1.5',
-                        (sub._pendingStatus ?? sub.status) === 1 ? 'bg-[#10B981]' : 'bg-[#94A3B8]'
+                        sub.status === 1 ? 'bg-[#10B981]' : 'bg-[#94A3B8]'
                       ]"
                     ></span>
-                    {{ (sub._pendingStatus ?? sub.status) === 1 ? '启用中' : '已停用' }}
+                    {{ sub.status === 1 ? '启用中' : '已停用' }}
                   </span>
                 </td>
 
@@ -271,15 +220,15 @@
                     <button
                       type="button"
                       @click="dictStore.toggleStatus(sub.id)"
-                      :aria-label="`${(sub._pendingStatus ?? sub.status) === 1 ? '停用' : '启用'}子项条目 ${sub.itemCode}`"
+                      :aria-label="`${sub.status === 1 ? '停用' : '启用'}子项条目 ${sub.itemCode}`"
                       :class="[
                         'h-11 min-h-[44px] px-2 text-xs font-medium rounded-[4px] transition-colors cursor-pointer',
-                        (sub._pendingStatus ?? sub.status) === 1
+                        sub.status === 1
                           ? 'text-[#DC2626] hover:bg-[#FEF2F2]'
                           : 'text-[#16A34A] hover:bg-[#F0FDF4]'
                       ]"
                     >
-                      {{ (sub._pendingStatus ?? sub.status) === 1 ? '停用' : '启用' }}
+                      {{ sub.status === 1 ? '停用' : '启用' }}
                     </button>
                   </div>
                 </td>

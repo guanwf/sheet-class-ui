@@ -29,11 +29,6 @@
           >
             内置·不可删除，不可改编码
           </span>
-
-          <!-- 当前生效版本号 -->
-          <span class="px-2 py-0.5 text-xs font-mono font-semibold rounded bg-[#F1F5F9] text-[#475569] border border-[#E2E8F0]">
-            版本: v{{ dictStore.currentType.version }}
-          </span>
         </div>
 
         <!-- 编码与说明 -->
@@ -48,21 +43,8 @@
         </div>
       </div>
 
-      <!-- 右侧操作按钮组：「变更历史」「引用检查」「新增条目」 -->
+      <!-- 右侧操作按钮组：「引用检查」「新增条目」（已去除变更历史与版本功能） -->
       <div class="flex items-center space-x-2 shrink-0">
-        <!-- 变更历史按钮 -->
-        <button
-          type="button"
-          @click="dictStore.openHistory()"
-          aria-label="查看变更历史与版本对比"
-          class="h-11 min-h-[44px] px-3.5 text-xs font-medium text-[#334155] bg-white border border-[#CBD5E1] rounded-[6px] hover:bg-[#F8FAFC] hover:border-[#94A3B8] active:bg-[#F1F5F9] transition-colors flex items-center space-x-1.5 cursor-pointer"
-        >
-          <svg class="w-4 h-4 text-[#64748B]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <span>变更历史</span>
-        </button>
-
         <!-- 引用检查按钮 -->
         <button
           type="button"

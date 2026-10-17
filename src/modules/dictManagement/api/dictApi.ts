@@ -539,69 +539,24 @@ class DictMockBackend {
     const type = this.getType(tenantId, typeCode);
     if (!type) throw new Error(`字典类型 ${typeCode} 不存在`);
 
-    // 获取正式数据（本租户优先，若无回退到平台 '0'）
+    // 获取数据（本租户优先，若无回退到平台 '0'）
     let currentItems = this.items.filter((i) => i.tenantId === type.tenantId && i.typeCode === typeCode);
     if (currentItems.length === 0 && type.tenantId !== '0') {
       currentItems = this.items.filter((i) => i.tenantId === '0' && i.typeCode === typeCode);
     }
 
-    // 复制并附加草稿
-    const drafts = this.drafts.filter((d) => d.tenantId === type.tenantId && d.typeCode === typeCode);
-
     const mergedItems: DictItem[] = JSON.parse(JSON.stringify(currentItems));
-
-    // 将草稿标记映射在列表上
-    for (const d of drafts) {
-      const content = typeof d.draftContent === 'string' ? JSON.parse(d.draftContent) : d.draftContent;
-      if (d.action === 'ADD') {
-        mergedItems.push({
-          id: 'draft_' + d.id,
-          typeCode: d.typeCode,
-          tenantId: d.tenantId,
-          itemCode: d.itemCode,
-          parentCode: content.parentCode || null,
-          labelI18n: content.labelI18n || { 'zh-CN': d.itemCode },
-          sortNo: content.sortNo || 999,
-          ext: content.ext || {},
-          status: content.status ?? 1,
-          validFrom: content.validFrom || null,
-          validTo: content.validTo || null,
-          creator: d.createdBy,
-          createTime: d.createTime,
-          _draftStatus: 'NEW',
-        });
-      } else if (d.action === 'UPDATE') {
-        const target = mergedItems.find((i) => i.itemCode === d.itemCode);
-        if (target) {
-          target._draftStatus = 'MODIFIED';
-          if (content.labelI18n) target.labelI18n = content.labelI18n;
-          if (content.sortNo !== undefined) target.sortNo = content.sortNo;
-          if (content.parentCode !== undefined) target.parentCode = content.parentCode;
-          if (content.ext !== undefined) target.ext = content.ext;
-          if (content.validFrom !== undefined) target.validFrom = content.validFrom;
-          if (content.validTo !== undefined) target.validTo = content.validTo;
-        }
-      } else if (d.action === 'TOGGLE_STATUS') {
-        const target = mergedItems.find((i) => i.itemCode === d.itemCode);
-        if (target) {
-          target._draftStatus = 'TOGGLED';
-          target._pendingStatus = content.status;
-        }
-      }
-    }
-
-    // 排序
     mergedItems.sort((a, b) => a.sortNo - b.sortNo);
 
     return {
       type,
       items: mergedItems,
-      drafts,
-      draftCount: drafts.length,
+      drafts: [],
+      draftCount: 0,
     };
   }
 
-  public addItemDraft(dto: any, operator = '当前操作员'): DictDraft {
+  public addItemDraft(dto: any, operator = '当前操作员'): any {
     const tenant = dto.tenantId || '0';
     let itemCode = (dto.itemCode || '').trim();
 
@@ -614,73 +569,53 @@ class DictMockBackend {
     }
 
     const exist = this.items.find((i) => i.tenantId === tenant && i.typeCode === dto.typeCode && i.itemCode === itemCode);
-    if (exist) throw new Error(`条目编码 ${itemCode} 已在正式字典中存在`);
+    if (exist) throw new Error(`条目编码 ${itemCode} 已在字典中存在`);
 
-    // 移除已有相同草稿
-    this.drafts = this.drafts.filter((d) => !(d.tenantId === tenant && d.typeCode === dto.typeCode && d.itemCode === itemCode));
-
-    const draft: DictDraft = {
+    const newItem: DictItem = {
       id: Date.now().toString(),
-      tenantId: tenant,
       typeCode: dto.typeCode,
+      tenantId: tenant,
       itemCode,
-      action: 'ADD',
-      draftContent: {
-        ...dto,
-        itemCode,
-      },
-      createdBy: operator,
+      parentCode: dto.parentCode || null,
+      labelI18n: dto.labelI18n || { 'zh-CN': itemCode },
+      sortNo: dto.sortNo || (this.items.length + 1) * 10,
+      ext: dto.ext || {},
+      status: dto.status ?? 1,
+      validFrom: dto.validFrom || null,
+      validTo: dto.validTo || null,
+      creator: operator,
       createTime: new Date().toLocaleString(),
     };
 
-    this.drafts.push(draft);
+    this.items.push(newItem);
     this.saveToStorage();
-    return draft;
+    return newItem;
   }
 
-  public updateItemDraft(dto: any, operator = '当前操作员'): DictDraft {
-    const item = this.items.find((i) => i.id === dto.id.toString());
-    if (!item) throw new Error('待编辑的条目不存在');
+  public updateItemDraft(dto: any, operator = '当前操作员'): any {
+    const index = this.items.findIndex((i) => i.id === dto.id.toString());
+    if (index === -1) throw new Error('待编辑的条目不存在');
 
-    this.drafts = this.drafts.filter((d) => !(d.tenantId === item.tenantId && d.typeCode === item.typeCode && d.itemCode === item.itemCode));
+    const item = this.items[index];
+    if (dto.labelI18n) item.labelI18n = dto.labelI18n;
+    if (dto.sortNo !== undefined) item.sortNo = dto.sortNo;
+    if (dto.parentCode !== undefined) item.parentCode = dto.parentCode;
+    if (dto.ext !== undefined) item.ext = dto.ext;
+    if (dto.validFrom !== undefined) item.validFrom = dto.validFrom;
+    if (dto.validTo !== undefined) item.validTo = dto.validTo;
+    if (dto.status !== undefined) item.status = dto.status;
 
-    const draft: DictDraft = {
-      id: Date.now().toString(),
-      tenantId: item.tenantId,
-      typeCode: item.typeCode,
-      itemCode: item.itemCode,
-      action: 'UPDATE',
-      draftContent: dto,
-      createdBy: operator,
-      createTime: new Date().toLocaleString(),
-    };
-
-    this.drafts.push(draft);
     this.saveToStorage();
-    return draft;
+    return item;
   }
 
-  public toggleItemStatus(id: string, operator = '当前操作员'): DictDraft {
+  public toggleItemStatus(id: string, operator = '当前操作员'): any {
     const item = this.items.find((i) => i.id === id.toString());
     if (!item) throw new Error('条目不存在');
 
-    const nextStatus = item.status === 1 ? 0 : 1;
-    this.drafts = this.drafts.filter((d) => !(d.tenantId === item.tenantId && d.typeCode === item.typeCode && d.itemCode === item.itemCode));
-
-    const draft: DictDraft = {
-      id: Date.now().toString(),
-      tenantId: item.tenantId,
-      typeCode: item.typeCode,
-      itemCode: item.itemCode,
-      action: 'TOGGLE_STATUS',
-      draftContent: { id: item.id, status: nextStatus },
-      createdBy: operator,
-      createTime: new Date().toLocaleString(),
-    };
-
-    this.drafts.push(draft);
+    item.status = item.status === 1 ? 0 : 1;
     this.saveToStorage();
-    return draft;
+    return item;
   }
 
   public discardDrafts(tenantId: string, typeCode: string, operator = '当前操作员') {

@@ -1,8 +1,7 @@
 <template>
   <aside class="w-full lg:w-[320px] bg-white border-r border-[#DDE3EA] flex flex-col shrink-0 overflow-hidden">
-    <!-- 1. 搜索框与范围筛选 -->
-    <div class="p-3 border-b border-[#DDE3EA] space-y-2.5 bg-[#F8FAFC]">
-      <!-- 搜索框 -->
+    <!-- 1. 搜索过滤栏（保留输入框过滤，去除范围全部/平台/租户/组织切换） -->
+    <div class="p-3 border-b border-[#DDE3EA] bg-[#F8FAFC]">
       <div class="relative">
         <label for="dict-search-input" class="sr-only">按名称或编码过滤字典类型</label>
         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -19,30 +18,9 @@
           class="block w-full h-11 min-h-[44px] pl-9 pr-3 text-xs text-[#0F172A] bg-white border border-[#CBD5E1] rounded-[6px] placeholder-[#94A3B8] focus:outline-hidden focus:border-[#1F4FD8] focus:ring-1 focus:ring-[#1F4FD8] transition-colors"
         />
       </div>
-
-      <!-- 范围筛选胶囊：全部 / 平台 / 租户 / 组织 -->
-      <div class="flex items-center justify-between p-1 bg-[#EEF2F6] rounded-[6px] text-xs" role="tablist" aria-label="作用范围筛选">
-        <button
-          v-for="scope in scopeOptions"
-          :key="scope.key"
-          type="button"
-          role="tab"
-          :aria-selected="dictStore.activeScopeFilter === scope.key"
-          :aria-label="`筛选范围：${scope.label}`"
-          @click="onSelectScope(scope.key)"
-          :class="[
-            'flex-1 h-9 min-h-[36px] text-xs font-medium rounded-[4px] transition-all cursor-pointer',
-            dictStore.activeScopeFilter === scope.key
-              ? 'bg-white text-[#1F4FD8] shadow-2xs font-semibold'
-              : 'text-[#475569] hover:text-[#0F172A] hover:bg-[#E2E8F0]/50'
-          ]"
-        >
-          {{ scope.label }}
-        </button>
-      </div>
     </div>
 
-    <!-- 2. 字典类型列表 -->
+    <!-- 2. 字典类型列表（默认全部类型，已去除版本标识） -->
     <div class="flex-1 overflow-y-auto divide-y divide-[#F1F5F9]">
       <div v-if="dictStore.filteredTypes.length === 0" class="py-12 px-4 text-center text-xs text-[#94A3B8]">
         未检索到匹配的字典类型
@@ -55,7 +33,7 @@
         @click="dictStore.selectType(item.typeCode)"
         :aria-label="`选择字典类型：${item.name} (${item.typeCode})`"
         :class="[
-          'w-full text-left p-3.5 transition-colors border-l-3 cursor-pointer flex flex-col justify-center min-h-[64px]',
+          'w-full text-left p-3.5 transition-colors border-l-3 cursor-pointer flex flex-col justify-center min-h-[60px]',
           dictStore.selectedTypeCode === item.typeCode
             ? 'bg-[#F0F4FE] border-[#1F4FD8]'
             : 'bg-white border-transparent hover:bg-[#F8FAFC]'
@@ -91,11 +69,6 @@
           <span class="font-mono text-[#64748B] tracking-tight">
             {{ item.typeCode }}
           </span>
-
-          <!-- 版本标识 -->
-          <span class="text-[10px] font-mono font-medium text-[#94A3B8]">
-            v{{ item.version }}
-          </span>
         </div>
       </button>
     </div>
@@ -103,25 +76,13 @@
     <!-- 左栏底部统计 -->
     <div class="p-2.5 bg-[#F8FAFC] border-t border-[#DDE3EA] text-[11px] text-[#64748B] flex items-center justify-between">
       <span>类型总数: <strong class="text-[#0F172A] font-semibold">{{ dictStore.filteredTypes.length }}</strong></span>
-      <span>当前作用域: <strong>{{ dictStore.activeScopeFilter === 'ALL' ? '全部' : dictStore.activeScopeFilter }}</strong></span>
+      <span class="text-[10px] text-[#94A3B8]">类型全部展示</span>
     </div>
   </aside>
 </template>
 
 <script setup lang="ts">
 import { useDictStore } from '../store/dictStore';
-import { ScopeType } from '../types/dict';
 
 const dictStore = useDictStore();
-
-const scopeOptions: { key: ScopeType; label: string }[] = [
-  { key: 'ALL', label: '全部' },
-  { key: 'PLATFORM', label: '平台' },
-  { key: 'TENANT', label: '租户' },
-  { key: 'ORG', label: '组织' },
-];
-
-const onSelectScope = (scope: ScopeType) => {
-  dictStore.activeScopeFilter = scope;
-};
 </script>
